@@ -42,4 +42,16 @@ public class PersonRepository extends BaseRepository<Person> {
             em.close();
         }
     }
+
+    public void update(Person person) {
+        try {
+            EntityManager em = emf.createEntityManager();
+            em.getTransaction().begin();
+            em.merge(person);
+            em.getTransaction().commit();
+            em.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }
