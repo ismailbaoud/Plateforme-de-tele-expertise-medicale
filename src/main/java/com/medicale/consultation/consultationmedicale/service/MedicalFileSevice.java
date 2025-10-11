@@ -51,4 +51,8 @@ public class MedicalFileSevice {
 //            medicalFileRepository.delete(id);
 //        }
 
+    public void update(MedicaleFile medicaleFile) {
+            medicalFileRepository.update(medicaleFile);
+    }
+
 }
