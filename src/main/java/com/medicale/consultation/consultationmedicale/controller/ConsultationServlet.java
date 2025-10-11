@@ -12,12 +12,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @WebServlet("/consultation")
 public class ConsultationServlet extends BaseServlet {
-
-
-
 
     public void update(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
@@ -65,4 +63,14 @@ public class ConsultationServlet extends BaseServlet {
     }
 
 
+    public void findAll(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try{
+            ConsultationService consultationService = new ConsultationService();
+            Long id = Long.parseLong(req.getParameter("id"));
+            List<Consultation> consultations = consultationService.findAll().stream().filter(a -> a.getMedicalFile().getId() == id).toList();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
