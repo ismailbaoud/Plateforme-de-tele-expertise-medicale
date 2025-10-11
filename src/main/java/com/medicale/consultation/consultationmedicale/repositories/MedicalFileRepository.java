@@ -27,4 +27,16 @@ public class MedicalFileRepository extends BaseRepository<MedicaleFile>{
         return tickets;
     }
 
+    public void update(MedicaleFile medicaleFile) {
+        try {
+            EntityManager em = emf.createEntityManager();
+            em.getTransaction().begin();
+            em.merge(medicaleFile);
+            em.getTransaction().commit();
+            em.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
