@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.List;
 
 @WebServlet("/medicalFiles")
 public class MedicalFileServlet extends BaseServlet{
@@ -19,23 +20,25 @@ public class MedicalFileServlet extends BaseServlet{
 
     public void index(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            Integer id = Integer.parseInt(req.getParameter("id"));
+                Long id = Long.parseLong(req.getParameter("id"));
             MedicaleFile medicaleFile = medicalFileSevice.findAll()
                     .stream()
-                    .filter(a -> a.getId() == id)
-                    .findFirst()
-                    .get();
+                    .filter(a -> a.getPatient().getId() == id)
+                    .findFirst().orElse(null);
             Integer age = Period.between(
                     medicaleFile.getPatient().getDateOfBirth(),
                     LocalDate.now()
             ).getYears();
             ConsultationService  consultationService = new ConsultationService();
-            Consultation consultation = consultationService.findAll().stream().filter(a -> a.getId() == id).findFirst().get();
-            System.out.println(medicaleFile.getPatient().getDateOfBirth());
+            Consultation consultation = consultationService.findAll().stream().filter(a -> a.getMedicalFile().getId() == medicaleFile.getId()).findFirst().get();
             req.setAttribute("consultation", consultation);
             req.setAttribute("age", age);
             req.setAttribute("medicalFile", medicaleFile);
+
+            List<Consultation> consultations = consultationService.findAll().stream().filter(a -> a.getMedicalFile().getId() == medicaleFile.getId()).toList();
+            req.setAttribute("consultations", consultations);
             view(req,resp,"medicalFile.jsp");
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
