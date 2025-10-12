@@ -21,10 +21,6 @@ public class PatientRepository extends BaseRepository<Patient> {
         em.getTransaction().commit();
     }
 
-    public Patient findById(int id) {
-        EntityManager em = emf.createEntityManager();
-        return em.find(Patient.class, id);
-    }
 
     public List<Patient> findAll() {
         EntityManager em = emf.createEntityManager();
@@ -32,14 +28,4 @@ public class PatientRepository extends BaseRepository<Patient> {
         return query.getResultList();
     }
 
-    public Patient findByName(String firstName, String lastName) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            TypedQuery<Patient> query = em.createQuery("SELECT p FROM Patient p WHERE p.firstName = :firstName and p.lastName = :lastName", Patient.class);
-            return  query.getSingleResult();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
