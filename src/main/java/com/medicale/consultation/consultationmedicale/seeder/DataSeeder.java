@@ -17,8 +17,7 @@ import java.util.List;
 @WebListener
 public class DataSeeder implements ServletContextListener {
 
-    private static final EntityManagerFactory emf =
-            Persistence.createEntityManagerFactory("MyPU");
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("MyPU");
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -83,24 +82,6 @@ public class DataSeeder implements ServletContextListener {
                         Speciality.ANESTHESIOLOGY,
                         200               );
                 specialist.setEmail("sara.specialist@hospital.com");
-
-//                // === PATIENT ===
-//                Patient patient = new Patient(
-//                        0,
-//                        "Youssef",
-//                        "Brahimi",
-//                        "youssef",
-//                        "1234",
-//                        "0650000004",
-//                        Gender.MALE,
-//                        LocalDate.of(2000, 8, 2),
-//                        Role.PATIENT,
-//                        "hhhhhhhh",
-//                        LocalDate.now(),
-//                        120.9,
-//                        100
-//                );
-//                patient.setEmail("youssef.patient@hospital.com");
 
                 List<Person> people = List.of(nurse, generalist, specialist);
                 for (Person p : people) {
