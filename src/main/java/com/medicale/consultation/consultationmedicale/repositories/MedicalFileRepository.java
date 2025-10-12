@@ -20,7 +20,6 @@ public class MedicalFileRepository extends BaseRepository<MedicaleFile>{
         em.getTransaction().commit();
     }
 
-
     public List<MedicaleFile> findAll() {
         EntityManager em = emf.createEntityManager();
         List<MedicaleFile> tickets =em.createQuery("select t from MedicaleFile t order by t.id").getResultList();
