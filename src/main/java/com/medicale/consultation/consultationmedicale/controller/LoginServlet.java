@@ -20,8 +20,7 @@ import java.util.List;
 @WebServlet("/login")
 public class LoginServlet extends BaseServlet {
 
-    public void index(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    public void index(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
@@ -32,8 +31,7 @@ public class LoginServlet extends BaseServlet {
         request.getRequestDispatcher("/login.jsp").forward(request, response);
     }
 
-    public void authenticate(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    public void authenticate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             String email = request.getParameter("email");
             String password = request.getParameter("password");
@@ -63,4 +61,5 @@ public class LoginServlet extends BaseServlet {
             throw new RuntimeException(e);
         }
     }
+
 }
