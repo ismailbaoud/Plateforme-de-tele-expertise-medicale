@@ -26,6 +26,7 @@ public class MedicalActsServlet extends BaseServlet {
             throw new RuntimeException(e);
         }
     }
+
     public void create(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         MedicalActsService  medicalActsService = new MedicalActsService();
         try {
