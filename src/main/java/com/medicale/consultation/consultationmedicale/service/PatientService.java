@@ -7,7 +7,9 @@ import java.util.List;
 
 public class PatientService {
     PatientRepository patientRepository =  new PatientRepository();
+
     public List<Patient> findAll() {
         return patientRepository.findAll();
     }
+
 }
