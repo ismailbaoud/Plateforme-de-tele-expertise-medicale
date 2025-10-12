@@ -6,7 +6,9 @@ import com.medicale.consultation.consultationmedicale.repositories.MedicalActsRe
 
 public class MedicalActsService {
     MedicalActsRepository medicalActsRepository = new MedicalActsRepository();
+
     public void save(MedicaleAct ma){
         medicalActsRepository.save(ma);
     }
+
 }
