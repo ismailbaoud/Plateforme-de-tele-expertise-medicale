@@ -100,8 +100,6 @@ public class PatientServlet extends BaseServlet {
         }
     }
 
-
-
     public void updatePatient(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PersonService personService = new PersonService();
         MedicalFileSevice medicalFileSevice = new MedicalFileSevice();
