@@ -37,7 +37,7 @@ public class PersonRepository extends BaseRepository<Person> {
                     .setParameter("username", username)
                     .getSingleResult();
         } catch (Exception e) {
-            return null; // No result
+            return null;
         } finally {
             em.close();
         }
