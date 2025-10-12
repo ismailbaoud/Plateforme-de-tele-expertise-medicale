@@ -1,106 +1,148 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="com.medicale.consultation.consultationmedicale.models.person.Person" %>
+
+<%
+    Person user = (Person) session.getAttribute("user");
+    if (user == null) {
+        response.sendRedirect("login");
+        return;
+    }
+%>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Détails du Fichier Médical</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dossier médical du patient</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50 font-sans text-gray-800">
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-800 dark:text-gray-200 transition-colors duration-300 flex flex-col">
 
-<div class="max-w-5xl mx-auto mt-10 mb-10 bg-white rounded-2xl shadow-xl overflow-hidden">
-    <!-- Header -->
-    <div class="bg-cyan-700 text-white p-6 flex justify-between items-center">
-        <h1 class="text-3xl font-bold">Dossier Médical du Patient</h1>
-        <div class="space-x-2">
-            <a href="consultation?action=endingSession&status=complete"
-               class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-xl transition">
-                ✅ Clôturer la consultation
-            </a>
-            <a href="consultation?action=endingSession&status=specialistOpinion"
-               class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-xl transition">
-                🩺 Avis spécialiste
-            </a>
-        </div>
-    </div>
+<jsp:include page="../../header.jsp"/>
 
-    <div class="p-8 space-y-10">
+<main class="flex-grow p-6 lg:p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h1 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                Dossier médical du patient: ${medicalFile.patient.firstName} ${medicalFile.patient.lastName}
+            </h1>
 
-        <!-- Patient Info -->
-        <section class="bg-gray-50 rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h2 class="text-2xl font-semibold text-cyan-700 mb-4">Informations du Patient</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><strong>Prénom:</strong> ${medicalFile.patient.firstName}</div>
-                <div><strong>Nom:</strong> ${medicalFile.patient.lastName}</div>
-                <div><strong>Email:</strong> ${medicalFile.patient.email}</div>
-                <div><strong>Téléphone:</strong> ${medicalFile.patient.phone}</div>
-                <div><strong>Taille:</strong> ${medicalFile.patient.height} cm</div>
-                <div><strong>Poids:</strong> ${medicalFile.patient.weight} kg</div>
-                <div><strong>Âge:</strong> ${age} ans</div>
-            </div>
-        </section>
+            <!-- Personal Info -->
+            <section class="mb-6 p-5 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h2 class="text-base font-medium text-gray-700 dark:text-gray-300 mb-3">Informations personnelles</h2>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                    <li><strong
+                            class="text-gray-700 dark:text-gray-300">Nom:</strong> ${medicalFile.patient.firstName} ${medicalFile.patient.lastName}
+                    </li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">Date de
+                        naissance:</strong> ${medicalFile.patient.dateOfBirth}</li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">Numéro de
+                        dossier:</strong> ${medicalFile.patient.dossierNumber}</li>
+                    <li><strong
+                            class="text-gray-700 dark:text-gray-300">Téléphone:</strong> ${medicalFile.patient.phone}
+                    </li>
+                </ul>
+            </section>
 
-        <!-- Medical File Info -->
-        <section class="bg-gray-50 rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h2 class="text-2xl font-semibold text-cyan-700 mb-4">Paramètres Médicaux</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><strong>Température:</strong> ${medicalFile.temperature} °C</div>
-                <div><strong>Pouls:</strong> ${medicalFile.pulse} bpm</div>
-                <div><strong>Pression Artérielle:</strong> ${medicalFile.bloodPresure}</div>
-                <div><strong>Fréquence Respiratoire:</strong> ${medicalFile.respiratoryRate}</div>
-                <div><strong>Saturation O₂:</strong> ${medicalFile.oxygenSaturation} %</div>
-                <div><strong>Douleur:</strong> ${medicalFile.pain}</div>
-            </div>
-        </section>
+            <!-- Vital Signs -->
+            <section class="mb-6 p-5 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h2 class="text-base font-medium text-gray-700 dark:text-gray-300 mb-3">Signes vitaux</h2>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
+                    <li><strong class="text-gray-700 dark:text-gray-300">Tension
+                        artérielle:</strong> ${medicalFile.bloodPresure}</li>
+                    <li><strong
+                            class="text-gray-700 dark:text-gray-300">Température:</strong> ${medicalFile.temperature}
+                    </li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">Fréquence
+                        respiratoire:</strong> ${medicalFile.respiratoryRate}</li>
+                    <li><strong
+                            class="text-gray-700 dark:text-gray-300">Poids/Taille:</strong> ${medicalFile.patient.weight}
+                        kg / ${medicalFile.patient.height} cm
+                    </li>
+                </ul>
+            </section>
 
-        <!-- Consultation Creation Form -->
-        <section class="bg-gray-50 rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h2 class="text-2xl font-semibold text-cyan-700 mb-4">Nouvelle Consultation</h2>
-            <form action="consultation?action=update&id=${consultation.id}" method="post" class="space-y-5">
-                <input type="hidden" name="medicalFileId" value="${medicalFile.id}"/>
-
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Motif de consultation</label>
-                    <input type="text" name="reason" placeholder="Ex: douleur abdominale"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none" required>
+            <!-- Previous Consultations -->
+            <section class="mb-6 p-5 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h2 class="text-base font-medium text-gray-700 dark:text-gray-300 mb-3">Consultations précédentes</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-200 dark:border-gray-600 rounded-lg">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                Date
+                            </th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                Motif
+                            </th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                Observations
+                            </th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                Statut
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <c:forEach var="consultation" items="${consultations}">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <td class="px-4 py-2 text-sm">${consultation.createdAt}</td>
+                                <td class="px-4 py-2 text-sm">${consultation.reason}</td>
+                                <td class="px-4 py-2 text-sm">${consultation.observations}</td>
+                                <td class="px-4 py-2 text-sm">${consultation.consultationStatus}</td>
+                            </tr>
+                        </c:forEach>
+                        <c:if test="${empty consultations}">
+                            <tr>
+                                <td colspan="4" class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                    Aucune consultation enregistrée.
+                                </td>
+                            </tr>
+                        </c:if>
+                        </tbody>
+                    </table>
                 </div>
+            </section>
 
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Symptômes (ce que le patient ressent)</label>
-                    <textarea name="symptoms" placeholder="Ex: fatigue, fièvre, maux de tête..."
-                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none" rows="3" required></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Examen clinique (constatations du médecin)</label>
-                    <textarea name="clinicalExam" placeholder="Ex: température élevée, toux sèche..."
-                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none" rows="3" required></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Observations / Diagnostic</label>
-                    <textarea name="observations" placeholder="Ex: suspicion d'infection virale..."
-                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none" rows="3"></textarea>
-                </div>
-
-                <div class="flex justify-end">
+            <!-- Create New Consultation -->
+            <section class="text-right">
+                <form action="${pageContext.request.contextPath}/consultation" method="get" class="inline-block">
+                    <input type="hidden" name="patientId" value="${medicalFile.patient.id}"/>
                     <button type="submit"
-                            class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-xl font-medium shadow transition">
-                        💾 Enregistrer la Consultation
+                            class="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors">
+                        Créer une nouvelle consultation
                     </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Medical Acts -->
-        <div class="flex justify-end">
-            <a href="/medicalActs?id=${medicalFile.id}"
-               class="bg-gray-100 hover:bg-gray-200 text-cyan-700 font-medium px-5 py-2 rounded-xl border border-cyan-300 shadow-sm transition">
-                ➕ Ajouter des Actes Médicaux
-            </a>
+                </form>
+            </section>
         </div>
     </div>
-</div>
+</main>
+
+<%--<jsp:include page="footer.jsp" />--%>
+
+<script>
+    // Dark mode persistence
+    if (localStorage.getItem('darkMode') === 'enabled' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    }
+</script>
 
 </body>
 </html>
