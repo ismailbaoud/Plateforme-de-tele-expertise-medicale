@@ -3,6 +3,7 @@ package com.medicale.consultation.consultationmedicale.models.consultation;
 import com.medicale.consultation.consultationmedicale.enums.ConsultationStatus;
 import com.medicale.consultation.consultationmedicale.models.MedicaleFile;
 import com.medicale.consultation.consultationmedicale.models.person.Generalist;
+import com.medicale.consultation.consultationmedicale.models.person.Patient;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -54,7 +55,9 @@ public class Consultation {
     @JoinColumn(name = "generalist_id")
     private Generalist generalist;
 
-
+    @ManyToOne
+    @JoinColumn(name = "patient_id")
+    private Patient patient;
 
     public Consultation(int id, LocalDateTime createdAt, ConsultationStatus consultationStatus) {
         this.id = id;
@@ -158,5 +161,13 @@ public class Consultation {
 
     public void setTreatmentPlan(String treatmentPlan) {
         this.treatmentPlan = treatmentPlan;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 }
