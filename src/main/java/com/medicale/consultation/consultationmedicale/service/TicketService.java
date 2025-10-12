@@ -14,9 +14,6 @@ public class TicketService {
         this.ticketRepository = new TicketRepository();
     }
 
-    /**
-     * Save a ticket (insert into DB)
-     */
     public void save(Ticket ticket) {
         ticketRepository.save(ticket);
     }
