@@ -1,5 +1,6 @@
 package com.medicale.consultation.consultationmedicale.controller;
 
+import com.medicale.consultation.consultationmedicale.enums.ConsultationStatus;
 import com.medicale.consultation.consultationmedicale.models.MedicaleFile;
 import com.medicale.consultation.consultationmedicale.models.consultation.Consultation;
 import com.medicale.consultation.consultationmedicale.service.ConsultationService;
@@ -35,7 +36,7 @@ public class MedicalFileServlet extends BaseServlet{
             req.setAttribute("age", age);
             req.setAttribute("medicalFile", medicaleFile);
 
-            List<Consultation> consultations = consultationService.findAll().stream().filter(a -> a.getMedicalFile().getId() == medicaleFile.getId()).toList();
+            List<Consultation> consultations = consultationService.findAll().stream().filter(a -> a.getMedicalFile().getId() == medicaleFile.getId() && a.getConsultationStatus().equals(ConsultationStatus.COMPLETED)).toList();
             req.setAttribute("consultations", consultations);
             view(req,resp,"medicalFile.jsp");
 
@@ -43,4 +44,5 @@ public class MedicalFileServlet extends BaseServlet{
             throw new RuntimeException(e);
         }
     }
+
 }
