@@ -9,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "medicaleFiles")
-public class MedicaleFile { // todo: update MedicaleFile typing to MedicalFile
+public class MedicaleFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -20,8 +20,10 @@ public class MedicaleFile { // todo: update MedicaleFile typing to MedicalFile
     @Column(nullable = false)
     private int pulse;
 
-    @Column(nullable = false, name = "respiratory_rate")
+    @Column(nullable = false, name = "blood_presure")
     private int bloodPresure;
+
+
 
     @Column(nullable = false)
     private int respiratoryRate;
