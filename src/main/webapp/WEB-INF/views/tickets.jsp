@@ -74,7 +74,7 @@
                         <td class="py-3 px-4 text-sm text-gray-500 dark:text-gray-400"><%= t.getCreatedAt() %></td>
                         <td class="py-3 px-4 text-center">
                             <div class="flex justify-center gap-2">
-                                <a href="${pageContext.request.contextPath}/medicalFiles?id=<%=t.getId()%>"
+                                <a href="${pageContext.request.contextPath}/medicalFiles?id=<%=t.getPatient().getId()%>"
                                    class="badge bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800">
                                     Voir
                                 </a>

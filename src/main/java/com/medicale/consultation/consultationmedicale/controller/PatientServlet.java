@@ -2,6 +2,7 @@ package com.medicale.consultation.consultationmedicale.controller;
 
 import com.medicale.consultation.consultationmedicale.enums.ConsultationStatus;
 import com.medicale.consultation.consultationmedicale.enums.Role;
+import com.medicale.consultation.consultationmedicale.enums.TicketStatus;
 import com.medicale.consultation.consultationmedicale.models.MedicaleFile;
 import com.medicale.consultation.consultationmedicale.models.Ticket;
 import com.medicale.consultation.consultationmedicale.models.consultation.Consultation;
@@ -83,6 +84,7 @@ public class PatientServlet extends BaseServlet {
             Ticket ticket = new Ticket();
             ticket.setCreatedAt(LocalDateTime.now());
             ticket.setPatient(patient);
+            ticket.setTicketStatus(TicketStatus.PENDING);
             ticketService.save(ticket);
 
             Consultation consultation = new Consultation();
@@ -128,6 +130,7 @@ public class PatientServlet extends BaseServlet {
             Ticket ticket = new Ticket();
             ticket.setCreatedAt(LocalDateTime.now());
             ticket.setPatient(patient);
+            ticket.setTicketStatus(TicketStatus.PENDING);
             ticketService.save(ticket);
 
             medicaleFile.setTemperature(Double.parseDouble(req.getParameter("temperature")));

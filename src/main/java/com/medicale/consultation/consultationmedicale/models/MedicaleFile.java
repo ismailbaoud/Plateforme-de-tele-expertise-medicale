@@ -23,9 +23,7 @@ public class MedicaleFile {
     @Column(nullable = false, name = "blood_presure")
     private int bloodPresure;
 
-
-
-    @Column(nullable = false)
+    @Column(nullable = false, name = "respiratory_rate")
     private int respiratoryRate;
 
     @Column(nullable = false, name = "oxygen_saturation")

@@ -64,8 +64,7 @@
 
                 <!-- Clinical Exam -->
                 <div>
-                    <label for="clinicalExam" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Examen
-                        clinique</label>
+                    <label for="clinicalExam" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Examen clinique</label>
                     <textarea id="clinicalExam" name="clinicalExam" rows="3"
                               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
@@ -79,16 +78,14 @@
 
                 <!-- Observations -->
                 <div>
-                    <label for="observations" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observations
-                        / Notes</label>
+                    <label for="observations" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observations / Notes</label>
                     <textarea id="observations" name="observations" rows="3"
                               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
 
                 <!-- Treatment Plan -->
                 <div>
-                    <label for="treatmentPlan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Plan
-                        de traitement</label>
+                    <label for="treatmentPlan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Plan de traitement</label>
                     <textarea id="treatmentPlan" name="treatmentPlan" rows="3"
                               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
@@ -102,16 +99,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="newActLabel"
-                                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Libellé de
-                                l'acte</label>
+                                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Libellé de l'acte</label>
                             <input type="text" id="newActLabel"
                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Ex: Radiographie thorax"/>
                         </div>
                         <div>
                             <label for="newActPrice"
-                                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Prix
-                                (€)</label>
+                                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Prix (€)</label>
                             <input type="number" id="newActPrice" step="0.01" min="0"
                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Ex: 50"/>
@@ -127,13 +122,45 @@
 
                 <!-- Consultation Status -->
                 <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Statut
-                        de la consultation</label>
+                    <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Statut de la consultation</label>
                     <select id="status" name="status"
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                         <option value="COMPLETED">Terminée</option>
                         <option value="WAITING_SPECIALIST">En attente avis spécialiste</option>
                     </select>
+                </div>
+
+                <!-- ✅ Specialist Section (added) -->
+                <div id="specialistSection" class="hidden mt-6">
+                    <h3 class="text-base font-medium text-gray-700 dark:text-gray-300 mb-3">Avis du spécialiste</h3>
+
+                    <!-- Filters -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label for="filterSpeciality"
+                                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spécialité</label>
+                            <input type="text" id="filterSpeciality" placeholder="Ex: Cardiologie"
+                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="filterFee"
+                                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Frais max (€)</label>
+                            <input type="number" id="filterFee" min="0" step="0.01" placeholder="Ex: 100"
+                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="button" id="applyFilterButton"
+                                    class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors">
+                                Filtrer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Specialists List -->
+                    <div id="specialistsList"
+                         class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 max-h-64 overflow-y-auto space-y-3">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 italic">Chargement des spécialistes...</p>
+                    </div>
                 </div>
 
                 <!-- Submit Button -->
@@ -150,8 +177,6 @@
     </div>
 </main>
 
-<%--<jsp:include page="footer.jsp" />--%>
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const acts = [];
@@ -165,15 +190,12 @@
         const addAct = () => {
             const label = labelInput.value.trim();
             const price = priceInput.value.trim();
-
             if (!label || !price || parseFloat(price) < 0) {
                 alert("Veuillez remplir un libellé valide et un prix positif pour l'acte.");
                 return;
             }
-
             acts.push({label: label, price: parseFloat(price).toFixed(2)});
             updateActsUI();
-
             labelInput.value = '';
             priceInput.value = '';
             labelInput.focus();
@@ -181,12 +203,10 @@
 
         const updateActsUI = () => {
             actsContainer.innerHTML = '';
-
             if (acts.length === 0) {
                 actsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 italic">Aucun acte médical ajouté</p>';
                 return;
             }
-
             acts.forEach((act, index) => {
                 const div = document.createElement('div');
                 div.className = 'flex justify-between items-center border border-gray-200 dark:border-gray-600 p-3 rounded-md bg-white dark:bg-gray-700';
@@ -229,7 +249,6 @@
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             form.querySelectorAll('input[name^="acts["]').forEach(input => input.remove());
-
             acts.forEach((act, index) => {
                 const hiddenLabel = document.createElement('input');
                 hiddenLabel.type = 'hidden';
@@ -250,6 +269,64 @@
         });
 
         updateActsUI();
+    });
+
+    // --- Specialist Section Logic ---
+    const statusSelect = document.getElementById('status');
+    const specialistSection = document.getElementById('specialistSection');
+    const specialistsList = document.getElementById('specialistsList');
+    const filterSpeciality = document.getElementById('filterSpeciality');
+    const filterFee = document.getElementById('filterFee');
+    const applyFilterButton = document.getElementById('applyFilterButton');
+
+    const specialists = [
+        { name: 'Dr. Dupont', speciality: 'Cardiologie', fee: 80 },
+        { name: 'Dr. Martin', speciality: 'Dermatologie', fee: 60 },
+        { name: 'Dr. Lefèvre', speciality: 'Neurologie', fee: 100 },
+        { name: 'Dr. Bernard', speciality: 'Cardiologie', fee: 90 },
+        { name: 'Dr. Rousseau', speciality: 'Pédiatrie', fee: 50 },
+    ];
+
+    statusSelect.addEventListener('change', () => {
+        if (statusSelect.value === 'WAITING_SPECIALIST') {
+            specialistSection.classList.remove('hidden');
+            renderSpecialists(specialists);
+        } else {
+            specialistSection.classList.add('hidden');
+        }
+    });
+
+    function renderSpecialists(list) {
+        specialistsList.innerHTML = '';
+        if (list.length === 0) {
+            specialistsList.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 italic">Aucun spécialiste trouvé.</p>';
+            return;
+        }
+        list.forEach(spec => {
+            const div = document.createElement('div');
+            div.className = 'flex justify-between items-center p-3 rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700';
+            div.innerHTML = `
+                <div>
+                    <p class="text-sm font-medium text-gray-800 dark:text-gray-100">${spec.name}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">${spec.speciality} – ${spec.fee} €</p>
+                </div>
+                <button type="button"
+                        class="px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
+                    Sélectionner
+                </button>
+            `;
+            specialistsList.appendChild(div);
+        });
+    }
+
+    applyFilterButton.addEventListener('click', () => {
+        const specFilter = filterSpeciality.value.toLowerCase();
+        const feeFilter = parseFloat(filterFee.value);
+        const filtered = specialists.filter(s =>
+            (!specFilter || s.speciality.toLowerCase().includes(specFilter)) &&
+            (isNaN(feeFilter) || s.fee <= feeFilter)
+        );
+        renderSpecialists(filtered);
     });
 
     // Dark mode persistence

@@ -19,5 +19,13 @@ public class TicketRepository extends BaseRepository<Ticket> {
         return tickets;
     }
 
+    public void changeStatus(Ticket ticket) {
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        em.merge(ticket);
+        em.getTransaction().commit();
+        em.close();
+    }
+
 
 }

@@ -2,13 +2,16 @@ package com.medicale.consultation.consultationmedicale.controller;
 
 
 import com.medicale.consultation.consultationmedicale.enums.ConsultationStatus;
+import com.medicale.consultation.consultationmedicale.enums.TicketStatus;
 import com.medicale.consultation.consultationmedicale.models.MedicaleFile;
+import com.medicale.consultation.consultationmedicale.models.Ticket;
 import com.medicale.consultation.consultationmedicale.models.consultation.Consultation;
 import com.medicale.consultation.consultationmedicale.models.consultation.MedicaleAct;
 import com.medicale.consultation.consultationmedicale.models.person.Patient;
 import com.medicale.consultation.consultationmedicale.service.ConsultationService;
 import com.medicale.consultation.consultationmedicale.service.MedicalFileSevice;
 import com.medicale.consultation.consultationmedicale.service.PatientService;
+import com.medicale.consultation.consultationmedicale.service.TicketService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +36,6 @@ public class ConsultationServlet extends BaseServlet {
             throw new RuntimeException(e);
         }
     }
-
 
     public void create(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
@@ -101,20 +103,25 @@ public class ConsultationServlet extends BaseServlet {
                         act.setConsultation(consultation);
                         medicalActs.add(act);
 
-                        System.out.println("✅ Added act: " + label + " - " + priceStr + "€");
+                        System.out.println("Added act: " + label + " - " + priceStr + "€");
                     } catch (NumberFormatException e) {
-                        System.err.println("⚠️ Invalid price format at index "
+                        System.err.println(" Invalid price format at index "
                                 + index + ": " + priceStr);
                     }
                 }
                 index++;
             }
 
-            System.out.println("💡 Total medical acts found: " + medicalActs.size());
+            System.out.println(" Total medical acts found: " + medicalActs.size());
             consultation.setMedicaleActs(medicalActs);
 
             ConsultationService consultationService = new ConsultationService();
             consultationService.save(consultation);
+            TicketService ticketService = new TicketService();
+            Ticket ticket = ticketService.findAll().stream().filter(a -> a.getPatient().getId() == patient.getId() && a.getTicketStatus() == TicketStatus.PENDING).findFirst().orElse(null);
+            ticket.setTicketStatus(TicketStatus.COMPLETED);
+            ticketService.changeStatus(ticket);
+
 
             resp.sendRedirect("/medicalFiles?id=" + patientId + "&creation=success");
 

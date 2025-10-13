@@ -60,7 +60,7 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-800 dark:text-gray-200 transition-colors duration-300 flex flex-col">
 
-<jsp:include page="header.jsp"/>
+<jsp:include page="../../header.jsp"/>
 
 <main class="flex-grow p-6 lg:p-8">
     <div class="max-w-3xl mx-auto">
@@ -261,7 +261,7 @@
     </div>
 </main>
 
-<jsp:include page="footer.jsp"/>
+<jsp:include page="../../footer.jsp"/>
 
 <script>
     const step1 = document.getElementById('form-step-1');

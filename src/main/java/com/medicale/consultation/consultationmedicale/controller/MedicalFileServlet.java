@@ -21,7 +21,7 @@ public class MedicalFileServlet extends BaseServlet{
 
     public void index(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-                Long id = Long.parseLong(req.getParameter("id"));
+            Long id = Long.parseLong(req.getParameter("id"));
             MedicaleFile medicaleFile = medicalFileSevice.findAll()
                     .stream()
                     .filter(a -> a.getPatient().getId() == id)
@@ -31,8 +31,6 @@ public class MedicalFileServlet extends BaseServlet{
                     LocalDate.now()
             ).getYears();
             ConsultationService  consultationService = new ConsultationService();
-            Consultation consultation = consultationService.findAll().stream().filter(a -> a.getMedicalFile().getId() == medicaleFile.getId()).findFirst().get();
-            req.setAttribute("consultation", consultation);
             req.setAttribute("age", age);
             req.setAttribute("medicalFile", medicaleFile);
 

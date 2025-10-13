@@ -62,4 +62,16 @@ public class LoginServlet extends BaseServlet {
         }
     }
 
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            HttpSession session = request.getSession(false);
+            if (session != null && session.getAttribute("user") != null) {
+                session.invalidate();
+                response.sendRedirect("dashboard");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

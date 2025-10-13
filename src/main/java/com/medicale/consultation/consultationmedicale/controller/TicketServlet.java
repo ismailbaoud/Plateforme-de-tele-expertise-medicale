@@ -1,5 +1,6 @@
 package com.medicale.consultation.consultationmedicale.controller;
 
+import com.medicale.consultation.consultationmedicale.enums.TicketStatus;
 import com.medicale.consultation.consultationmedicale.models.Ticket;
 import com.medicale.consultation.consultationmedicale.service.TicketService;
 import jakarta.servlet.ServletException;
@@ -19,7 +20,7 @@ public class TicketServlet extends BaseServlet {
         try {
             TicketService ticketService = new TicketService();
             List<Ticket> tickets = ticketService.findAll().stream()
-                    .filter(a -> a.getCreatedAt().toLocalDate().isEqual(LocalDate.now()))
+                    .filter(a -> a.getCreatedAt().toLocalDate().isEqual(LocalDate.now()) && a.getTicketStatus() ==  TicketStatus.PENDING)
                     .sorted(Comparator.comparing(Ticket::getCreatedAt))
                     .toList();
             req.setAttribute("tickets", tickets);

@@ -71,7 +71,7 @@
                             class="text-gray-700 dark:text-gray-300">Température:</strong> ${medicalFile.temperature}
                     </li>
                     <li><strong class="text-gray-700 dark:text-gray-300">Fréquence
-                        respiratoire:</strong> ${medicalFile.respiratoryRate}</li>
+<%--                        respiratoire:</strong> ${medicalFile.respiratoryRate}</li>--%>
                     <li><strong
                             class="text-gray-700 dark:text-gray-300">Poids/Taille:</strong> ${medicalFile.patient.weight}
                         kg / ${medicalFile.patient.height} cm

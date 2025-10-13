@@ -21,4 +21,8 @@ public class TicketService {
     public List<Ticket> findAll() {
         return ticketRepository.findAll();
     }
+
+    public void changeStatus(Ticket ticket) {
+        ticketRepository.changeStatus(ticket);
+    }
 }
