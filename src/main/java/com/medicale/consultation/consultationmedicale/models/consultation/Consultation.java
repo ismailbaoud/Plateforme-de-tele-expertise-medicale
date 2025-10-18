@@ -2,11 +2,11 @@ package com.medicale.consultation.consultationmedicale.models.consultation;
 
 import com.medicale.consultation.consultationmedicale.enums.ConsultationStatus;
 import com.medicale.consultation.consultationmedicale.models.MedicaleFile;
+import com.medicale.consultation.consultationmedicale.models.ScheduleSlot;
 import com.medicale.consultation.consultationmedicale.models.person.Generalist;
 import com.medicale.consultation.consultationmedicale.models.person.Patient;
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,11 +16,10 @@ import java.util.List;
 public class Consultation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(nullable = false, name = "created_at")
     private LocalDateTime createdAt;
-
 
     @Column(nullable = false)
     private String reason;
@@ -39,6 +38,15 @@ public class Consultation {
 
     @Column(columnDefinition = "TEXT")
     private String treatmentPlan;
+
+    @Column(columnDefinition = "TEXT")
+    private String expertOpinion;
+
+    @Column(columnDefinition = "TEXT")
+    private String recommendations;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "consultation_status")
@@ -59,19 +67,28 @@ public class Consultation {
     @JoinColumn(name = "patient_id")
     private Patient patient;
 
-    public Consultation(int id, LocalDateTime createdAt, ConsultationStatus consultationStatus) {
+    @OneToOne(mappedBy = "consultation", fetch = FetchType.LAZY)
+    private ScheduleSlot scheduleSlot;
+
+    public Consultation(Long id, LocalDateTime createdAt, ConsultationStatus consultationStatus, String reason, Patient patient, MedicaleFile medicalFile) {
         this.id = id;
         this.createdAt = createdAt;
         this.consultationStatus = consultationStatus;
+        this.reason = reason;
+        this.patient = patient;
+        this.medicalFile = medicalFile;
     }
 
-    public Consultation() {}
+    public Consultation() {
+        this.createdAt = LocalDateTime.now();
+        this.consultationStatus = ConsultationStatus.PENDING;
+    }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -84,6 +101,10 @@ public class Consultation {
     }
 
     public ConsultationStatus getConsultationStatus() {
+        return consultationStatus;
+    }
+
+    public ConsultationStatus getStatus() {
         return consultationStatus;
     }
 
@@ -163,11 +184,43 @@ public class Consultation {
         this.treatmentPlan = treatmentPlan;
     }
 
+    public String getExpertOpinion() {
+        return expertOpinion;
+    }
+
+    public void setExpertOpinion(String expertOpinion) {
+        this.expertOpinion = expertOpinion;
+    }
+
+    public String getRecommendations() {
+        return recommendations;
+    }
+
+    public void setRecommendations(String recommendations) {
+        this.recommendations = recommendations;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public Patient getPatient() {
         return patient;
     }
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+    }
+
+    public ScheduleSlot getScheduleSlot() {
+        return scheduleSlot;
+    }
+
+    public void setScheduleSlot(ScheduleSlot scheduleSlot) {
+        this.scheduleSlot = scheduleSlot;
     }
 }
