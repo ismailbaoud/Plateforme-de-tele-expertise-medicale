@@ -36,6 +36,14 @@ public class NurseDashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        String action = request.getParameter("action");
+        
+        // Gérer la recherche de patients en GET
+        if ("searchPatient".equals(action)) {
+            searchPatient(request, response);
+            return;
+        }
+        
         try {
             // Récupérer tous les patients et tickets
             List<Patient> allPatients = patientService.findAll();
@@ -78,9 +86,9 @@ public class NurseDashboardServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String action = request.getParameter("action");
-        
+
         try {
             switch (action) {
                 case "addPatient":
@@ -113,26 +121,41 @@ public class NurseDashboardServlet extends HttpServlet {
             String email = request.getParameter("email");
             String phone = request.getParameter("phone");
             String genderStr = request.getParameter("gender");
+            String dateOfBirthStr = request.getParameter("dateOfBirth");
+            String heightStr = request.getParameter("height");
+            String weightStr = request.getParameter("weight");
+            String bloodType = request.getParameter("bloodType");
+            String allergies = request.getParameter("allergies");
 
             // Validation
             if (firstName == null || firstName.trim().isEmpty() ||
                 lastName == null || lastName.trim().isEmpty() ||
                 username == null || username.trim().isEmpty() ||
                 email == null || email.trim().isEmpty() ||
-                genderStr == null || genderStr.trim().isEmpty()) {
-                
+                genderStr == null || genderStr.trim().isEmpty() ||
+                dateOfBirthStr == null || dateOfBirthStr.trim().isEmpty() ||
+                heightStr == null || heightStr.trim().isEmpty() ||
+                weightStr == null || weightStr.trim().isEmpty()) {
+
                 request.setAttribute("error", "Tous les champs obligatoires doivent être remplis.");
                 doGet(request, response);
                 return;
             }
+
+            // Parse date de naissance
+            LocalDate dateOfBirth = LocalDate.parse(dateOfBirthStr);
+
+            // Parse height et weight
+            double height = Double.parseDouble(heightStr);
+            double weight = Double.parseDouble(weightStr);
 
             // Créer le patient
             Patient patient = new Patient();
             patient.setFirstName(firstName.trim());
             patient.setLastName(lastName.trim());
             patient.setUsername(username.trim());
-            patient.setPassword(password != null && !password.isEmpty() ? 
-                               PasswordUtils.hashPassword(password) : 
+            patient.setPassword(password != null && !password.isEmpty() ?
+                               PasswordUtils.hashPassword(password) :
                                PasswordUtils.hashPassword("password123"));
             patient.setEmail(email.trim());
             patient.setPhone(phone != null && !phone.trim().isEmpty() ? phone.trim() : null);
@@ -140,12 +163,29 @@ public class NurseDashboardServlet extends HttpServlet {
             patient.setCreatedAt(LocalDate.now());
             patient.setRole(Role.PATIENT);
 
+            // Nouveaux champs obligatoires
+            patient.setDateOfBirth(dateOfBirth);
+            patient.setHeight(height);
+            patient.setWeight(weight);
+
+            // Générer un numéro de dossier unique
+            String dossierNumber = generateDossierNumber();
+            patient.setDossierNumber(dossierNumber);
+
+            // Champs optionnels
+            if (bloodType != null && !bloodType.trim().isEmpty()) {
+                patient.setBloodType(bloodType.trim());
+            }
+            if (allergies != null && !allergies.trim().isEmpty()) {
+                patient.setAllergies(allergies.trim());
+            }
+
             Patient savedPatient = patientService.save(patient);
-            
-            request.setAttribute("successMessage", 
-                "Patient " + savedPatient.getFirstName() + " " + savedPatient.getLastName() + 
-                " ajouté avec succès !");
-            
+
+            request.setAttribute("successMessage",
+                "Patient " + savedPatient.getFirstName() + " " + savedPatient.getLastName() +
+                " ajouté avec succès ! Dossier N° " + savedPatient.getDossierNumber());
+
             doGet(request, response);
 
         } catch (Exception e) {
@@ -159,7 +199,7 @@ public class NurseDashboardServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String patientIdStr = request.getParameter("patientId");
-            
+
             if (patientIdStr == null || patientIdStr.trim().isEmpty()) {
                 request.setAttribute("error", "Veuillez sélectionner un patient.");
                 doGet(request, response);
@@ -168,7 +208,7 @@ public class NurseDashboardServlet extends HttpServlet {
 
             Long patientId = Long.parseLong(patientIdStr);
             Patient patient = patientService.findById(patientId);
-            
+
             if (patient == null) {
                 request.setAttribute("error", "Patient non trouvé.");
                 doGet(request, response);
@@ -180,17 +220,17 @@ public class NurseDashboardServlet extends HttpServlet {
             ticket.setPatient(patient);
             ticket.setStatus(TicketStatus.ACTIVE);
             ticket.setCreatedAt(LocalDateTime.now());
-            
+
             // Générer le numéro de ticket
             String ticketNumber = generateTicketNumber();
             ticket.setTicketNumber(ticketNumber);
 
             ticketService.save(ticket);
-            
-            request.setAttribute("successMessage", 
-                "Ticket N° " + ticketNumber + " créé pour " + 
+
+            request.setAttribute("successMessage",
+                "Ticket N° " + ticketNumber + " créé pour " +
                 patient.getFirstName() + " " + patient.getLastName());
-            
+
             doGet(request, response);
 
         } catch (Exception e) {
@@ -204,9 +244,9 @@ public class NurseDashboardServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        
+
         String query = request.getParameter("query");
-        
+
         try {
             List<Patient> allPatients = patientService.findAll();
             List<Patient> filteredPatients = allPatients.stream()
@@ -223,7 +263,7 @@ public class NurseDashboardServlet extends HttpServlet {
                     })
                     .limit(10)
                     .collect(Collectors.toList());
-            
+
             // Construire JSON
             StringBuilder json = new StringBuilder("[");
             for (int i = 0; i < filteredPatients.size(); i++) {
@@ -238,9 +278,9 @@ public class NurseDashboardServlet extends HttpServlet {
                     .append("}");
             }
             json.append("]");
-            
+
             response.getWriter().write(json.toString());
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -254,6 +294,12 @@ public class NurseDashboardServlet extends HttpServlet {
         return "T" + now.format(formatter) + String.format("%03d", (int)(Math.random() * 1000));
     }
 
+    private String generateDossierNumber() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        return "D" + now.format(formatter) + String.format("%03d", (int)(Math.random() * 1000));
+    }
+
     private String escapeJson(String str) {
         if (str == null) return "";
         return str.replace("\\", "\\\\")
@@ -263,4 +309,3 @@ public class NurseDashboardServlet extends HttpServlet {
                   .replace("\t", "\\t");
     }
 }
-
