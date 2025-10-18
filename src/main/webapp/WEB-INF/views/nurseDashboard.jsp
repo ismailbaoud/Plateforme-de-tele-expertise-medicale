@@ -219,7 +219,7 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-gray-600">${ticket.patient.email}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-gray-600">${ticket.patient.phone != null ? ticket.patient.phone : 'N/A'}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-gray-600">
-                                                <fmt:formatDate value="${ticket.createdAt}" pattern="dd/MM/yyyy HH:mm" />
+                                                ${ticket.createdAt.toString().replace('T', ' ').substring(0, 16)}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800">
@@ -266,6 +266,11 @@
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none">
                         </div>
                         <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Date de naissance *</label>
+                            <input type="date" name="dateOfBirth" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Nom d'utilisateur *</label>
                             <input type="text" name="username" required
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none">
@@ -298,6 +303,68 @@
                                     <span class="font-medium">Femme</span>
                                 </label>
                             </div>
+                        </div>
+
+                        <!-- Signes Vitaux -->
+                        <div class="col-span-2 mt-4 border-t-2 border-gray-200 pt-4">
+                            <h4 class="text-lg font-bold text-gray-800 mb-3">Signes Vitaux</h4>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Taille (cm) *</label>
+                            <input type="number" name="height" step="0.01" min="0" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none"
+                                   placeholder="Ex: 170">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Poids (kg) *</label>
+                            <input type="number" name="weight" step="0.01" min="0" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none"
+                                   placeholder="Ex: 70">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Tension (mmHg)</label>
+                            <input type="text" name="bloodPressure"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none"
+                                   placeholder="Ex: 120/80">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Température (°C)</label>
+                            <input type="number" name="temperature" step="0.1" min="30" max="45"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none"
+                                   placeholder="Ex: 37.0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Pouls (bpm)</label>
+                            <input type="number" name="heartRate" min="30" max="200"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none"
+                                   placeholder="Ex: 72">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Saturation O2 (%)</label>
+                            <input type="number" name="oxygenSaturation" min="0" max="100"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none"
+                                   placeholder="Ex: 98">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Groupe Sanguin</label>
+                            <select name="bloodType"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none">
+                                <option value="">Sélectionner...</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Allergies</label>
+                            <textarea name="allergies" rows="2"
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none"
+                                      placeholder="Allergies connues..."></textarea>
                         </div>
                     </div>
                     <div class="flex gap-3 mt-6">
@@ -394,20 +461,33 @@
 
             searchTimeout = setTimeout(() => {
                 fetch('${pageContext.request.contextPath}/nurse/dashboard?action=searchPatient&query=' + encodeURIComponent(query))
-                    .then(response => response.json())
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.length === 0) {
+                        console.log('Search results:', data);
+                        if (!data || data.length === 0) {
                             resultsDiv.innerHTML = '<p class="text-gray-600 text-center py-2">Aucun patient trouvé</p>';
                         } else {
                             let html = '<div class="space-y-2 max-h-60 overflow-y-auto">';
                             data.forEach(patient => {
-                                html += `
-                                    <div onclick="selectPatient(${patient.id}, '${patient.firstName}', '${patient.lastName}', '${patient.email}')"
-                                         class="p-4 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 cursor-pointer transition-all">
-                                        <p class="font-bold text-gray-900">${patient.firstName} ${patient.lastName}</p>
-                                        <p class="text-sm text-gray-600">${patient.email}</p>
-                                    </div>
-                                `;
+                                const firstName = (patient.firstName || '').replace(/'/g, "\\'");
+                                const lastName = (patient.lastName || '').replace(/'/g, "\\'");
+                                const email = (patient.email || 'Pas d\'email').replace(/'/g, "\\'");
+                                const patientId = patient.id || 0;
+                                const displayFirstName = patient.firstName || '';
+                                const displayLastName = patient.lastName || '';
+                                const displayEmail = patient.email || 'Pas d\'email';
+
+                                html += '<div onclick="selectPatient(' + patientId + ', \'' + firstName + '\', \'' + lastName + '\', \'' + email + '\')"';
+                                html += ' class="p-4 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 cursor-pointer transition-all">';
+                                html += '<p class="font-bold text-gray-900">' + displayFirstName + ' ' + displayLastName + '</p>';
+                                html += '<p class="text-sm text-gray-600">' + displayEmail + '</p>';
+                                html += '</div>';
                             });
                             html += '</div>';
                             resultsDiv.innerHTML = html;
@@ -415,35 +495,33 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        resultsDiv.innerHTML = '<p class="text-red-600 text-center py-2">Erreur lors de la recherche</p>';
+                        resultsDiv.innerHTML = '<p class="text-red-600 text-center py-2">Erreur lors de la recherche: ' + error.message + '</p>';
                     });
             }, 300);
         }
 
         function selectPatient(id, firstName, lastName, email) {
+            console.log('Patient selected:', id, firstName, lastName, email);
             document.getElementById('selectedPatientId').value = id;
             document.getElementById('patientSearchResults').innerHTML = '';
             document.getElementById('patientSearch').value = firstName + ' ' + lastName;
 
             const infoDiv = document.getElementById('selectedPatientInfo');
-            infoDiv.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                        ${firstName.charAt(0)}${lastName.charAt(0)}
-                    </div>
-                    <div>
-                        <p class="font-bold text-gray-900">${firstName} ${lastName}</p>
-                        <p class="text-sm text-gray-600">${email}</p>
-                    </div>
-                    <svg class="w-6 h-6 text-green-600 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-            `;
+            infoDiv.innerHTML = '<div class="flex items-center gap-3">' +
+                '<div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg">' +
+                firstName.charAt(0) + lastName.charAt(0) +
+                '</div>' +
+                '<div>' +
+                '<p class="font-bold text-gray-900">' + firstName + ' ' + lastName + '</p>' +
+                '<p class="text-sm text-gray-600">' + email + '</p>' +
+                '</div>' +
+                '<svg class="w-6 h-6 text-green-600 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />' +
+                '</svg>' +
+                '</div>';
             infoDiv.classList.remove('hidden');
             document.getElementById('submitTicketBtn').disabled = false;
         }
     </script>
 </body>
 </html>
-
