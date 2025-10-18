@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "requests")
-public class Request {
+@Table(name = "general_requests")
+public class GeneralRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,7 +22,7 @@ public class Request {
     @Column(nullable = false)
     private String status;
 
-    public Request() {
+    public GeneralRequest() {
         this.createdAt = LocalDateTime.now();
     }
 

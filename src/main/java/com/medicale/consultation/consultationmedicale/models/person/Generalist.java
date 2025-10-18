@@ -10,9 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "generalists")
 @DiscriminatorValue("generalists")
 public class Generalist extends Person {
-    @Column(nullable = false, name = "numero_RRPS", unique = true)
+    @Column(nullable = false, name = "numero_RPPS", unique = true)
     private String numeroRPPS;
 
     @Column(nullable = false)
@@ -27,7 +28,7 @@ public class Generalist extends Person {
     @OneToMany(mappedBy = "generalist")
     private List<Consultation> consultations = new ArrayList<>(); // todo: verify this shit, ain't correct by the first time
 
-    public Generalist(int id, String firstName, String lastName, String username, String password, String phone, Gender gender, LocalDate createdAt, Role role, String numeroRPPS, String address, String city, double fee) {
+    public Generalist(Long id, String firstName, String lastName, String username, String password, String phone, Gender gender, LocalDate createdAt, Role role, String numeroRPPS, String address, String city, double fee) {
         super(id, firstName, lastName, username, password, phone, gender, createdAt, role);
         this.numeroRPPS = numeroRPPS;
         this.address = address;

@@ -2,8 +2,6 @@ package com.medicale.consultation.consultationmedicale.repositories;
 
 import com.medicale.consultation.consultationmedicale.models.Ticket;
 import jakarta.persistence.EntityManager;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class TicketRepository extends BaseRepository<Ticket> {
@@ -12,20 +10,13 @@ public class TicketRepository extends BaseRepository<Ticket> {
         super(Ticket.class);
     }
 
+    @Override
     public List<Ticket> findAll() {
         EntityManager em = emf.createEntityManager();
-        List<Ticket> tickets = new ArrayList<>();
-        tickets.addAll(em.createQuery("select t from Ticket t", Ticket.class).getResultList());
-        return tickets;
+        try {
+            return em.createQuery("SELECT t FROM Ticket t", Ticket.class).getResultList();
+        } finally {
+            em.close();
+        }
     }
-
-    public void changeStatus(Ticket ticket) {
-        EntityManager em = emf.createEntityManager();
-        em.getTransaction().begin();
-        em.merge(ticket);
-        em.getTransaction().commit();
-        em.close();
-    }
-
-
 }

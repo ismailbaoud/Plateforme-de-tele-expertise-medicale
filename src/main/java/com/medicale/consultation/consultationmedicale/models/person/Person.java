@@ -1,6 +1,5 @@
 package com.medicale.consultation.consultationmedicale.models.person;
 
-import com.google.protobuf.Enum;
 import com.medicale.consultation.consultationmedicale.enums.Gender;
 import com.medicale.consultation.consultationmedicale.enums.Role;
 import jakarta.persistence.*;
@@ -13,7 +12,7 @@ import java.time.LocalDate;
 public abstract class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(name = "first_name", nullable = false, length = 50)
     protected String firstName;
@@ -43,9 +42,10 @@ public abstract class Person {
     protected LocalDate createdAt;
 
     @Column(name = "role", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
-    public Person(int id, String firstName, String lastName, String username, String password, String phone, Gender gender, LocalDate createdAt, Role role) {
+    public Person(Long id, String firstName, String lastName, String username, String password, String phone, Gender gender, LocalDate createdAt, Role role) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -58,13 +58,15 @@ public abstract class Person {
     }
 
     // required by JPA, if another constructor is defined
-    public Person() {}
+    public Person() {
+        this.createdAt = LocalDate.now();
+    }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -100,9 +102,6 @@ public abstract class Person {
         this.password = password;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
-    }
 
     public String getEmail() {
         return email;
@@ -140,7 +139,7 @@ public abstract class Person {
         return role;
     }
 
-    public void setCreatedAt(Role role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 }

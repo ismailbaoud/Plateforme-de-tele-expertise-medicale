@@ -16,16 +16,31 @@ public abstract class BaseRepository<T> {
         this.entityClass = entityClass;
     }
 
-    public void save(T entity) {
+    public T save(T entity) {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
-            em.persist(entity);
+            T savedEntity;
+            if (em.contains(entity)) {
+                savedEntity = em.merge(entity);
+            } else {
+                em.persist(entity);
+                savedEntity = entity;
+            }
             em.getTransaction().commit();
+            return savedEntity;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+            throw e;
         } finally {
             em.close();
         }
     }
+
+    public abstract List<T> findAll();
 
     public T findById(Long id) {
         EntityManager em = emf.createEntityManager();

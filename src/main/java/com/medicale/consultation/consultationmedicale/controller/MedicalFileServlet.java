@@ -16,31 +16,46 @@ import java.time.Period;
 import java.util.List;
 
 @WebServlet("/medicalFiles")
-public class MedicalFileServlet extends BaseServlet{
-    private final MedicalFileSevice medicalFileSevice =  new MedicalFileSevice();
+public class MedicalFileServlet extends BaseServlet {
+    private final MedicalFileSevice medicalFileSevice = new MedicalFileSevice();
+    private final ConsultationService consultationService = new ConsultationService();
 
-    public void index(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             Long id = Long.parseLong(req.getParameter("id"));
-            MedicaleFile medicaleFile = medicalFileSevice.findAll()
-                    .stream()
-                    .filter(a -> a.getPatient().getId() == id)
-                    .findFirst().orElse(null);
-            Integer age = Period.between(
-                    medicaleFile.getPatient().getDateOfBirth(),
-                    LocalDate.now()
-            ).getYears();
-            ConsultationService  consultationService = new ConsultationService();
-            req.setAttribute("age", age);
+
+            // Utiliser la nouvelle méthode qui charge les consultations avec JOIN FETCH
+            MedicaleFile medicaleFile = medicalFileSevice.findByPatientIdWithConsultations(id);
+
+            // Determine patient from the first consultation if available
+            var patient = (medicaleFile != null && medicaleFile.getConsultations() != null && !medicaleFile.getConsultations().isEmpty())
+                    ? medicaleFile.getConsultations().get(0).getPatient()
+                    : null;
+
+            if (patient != null && patient.getDateOfBirth() != null) {
+                Integer age = Period.between(
+                        patient.getDateOfBirth(),
+                        LocalDate.now()
+                ).getYears();
+                req.setAttribute("age", age);
+            }
+
             req.setAttribute("medicalFile", medicaleFile);
 
-            List<Consultation> consultations = consultationService.findAll().stream().filter(a -> a.getMedicalFile().getId() == medicaleFile.getId() && a.getConsultationStatus().equals(ConsultationStatus.COMPLETED)).toList();
-            req.setAttribute("consultations", consultations);
-            view(req,resp,"medicalFile.jsp");
+            if (medicaleFile != null) {
+                // Filtrer les consultations déjà chargées au lieu de faire une nouvelle requête
+                List<Consultation> consultations = medicaleFile.getConsultations()
+                        .stream()
+                        .filter(c -> ConsultationStatus.COMPLETED.equals(c.getConsultationStatus()))
+                        .toList();
+                req.setAttribute("consultations", consultations);
+            }
 
+            view(req, resp, "medicalFile.jsp");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Une erreur est survenue lors du traitement de votre demande");
         }
     }
-
 }

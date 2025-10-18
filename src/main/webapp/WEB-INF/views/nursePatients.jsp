@@ -1,273 +1,359 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.List" %>
-<%@ page import="com.medicale.consultation.consultationmedicale.models.person.Patient" %>
-<%@ page import="com.medicale.consultation.consultationmedicale.models.person.Person" %>
-<%@ page import="com.medicale.consultation.consultationmedicale.enums.Role" %>
-
-<%
-    Person user = (Person) session.getAttribute("user");
-    if (user == null || user.getRole() != Role.NURSE) {
-        response.sendRedirect(request.getContextPath() + "/login");
-        return;
-    }
-
-    List<Patient> patients = (List<Patient>) request.getAttribute("patients");
-%>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tous les Patients | Infirmière</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Liste des Patients - Infirmière</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { font-family: 'Inter', sans-serif; }
-        .diagonal-grid::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image:
-                    linear-gradient(45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%),
-                    linear-gradient(-45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%);
-            background-size: 40px 40px;
-            mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
-        }
-        .dark .diagonal-grid::before {
-            background-image:
-                    linear-gradient(45deg, transparent 49%, #334155 49%, #334155 51%, transparent 51%),
-                    linear-gradient(-45deg, transparent 49%, #334155 49%, #334155 51%, transparent 51%);
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
         .patient-card {
-            animation: slideIn 0.4s ease-out forwards;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .patient-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .badge-gender {
+            font-size: 0.85rem;
+        }
+        .search-highlight {
+            background-color: #fff3cd;
+        }
+        .tab-content {
+            padding-top: 20px;
         }
     </style>
 </head>
-<body class="bg-white dark:bg-slate-900 min-h-screen">
-<!-- Diagonal Grid Background -->
-<div class="fixed inset-0 diagonal-grid"></div>
-
-<%@include file="../../header.jsp"%>
-
-<main class="relative z-10 min-h-screen p-6 lg:p-8">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header Card -->
-        <div class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 overflow-hidden mb-6">
-            <div class="bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 p-8 text-white">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 class="text-3xl font-bold mb-1">Tous les Patients</h1>
-                            <p class="text-blue-100">Gestion et consultation des dossiers médicaux</p>
-                        </div>
-                    </div>
-                    <div class="hidden md:block">
-                        <div class="text-right bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4">
-                            <div class="text-4xl font-black"><%= patients != null ? patients.size() : 0 %></div>
-                            <div class="text-sm text-blue-100 font-medium">Patients</div>
-                        </div>
-                    </div>
-                </div>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-hospital"></i> Système Médical - Infirmière
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="${pageContext.request.contextPath}/nurse/patients">
+                            <i class="fas fa-users"></i> Patients
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/logout">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
             </div>
+        </div>
+    </nav>
 
-            <!-- Search and Filter Bar -->
-            <div class="p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-b border-gray-200 dark:border-slate-700">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-1 relative">
-                        <input type="text" id="searchInput" placeholder="Rechercher un patient (nom, prénom, dossier)..."
-                               class="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none">
-                        <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <select id="genderFilter" class="px-4 py-3 bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none">
-                        <option value="">Tous les genres</option>
-                        <option value="MALE">Hommes</option>
-                        <option value="FEMALE">Femmes</option>
-                    </select>
-                </div>
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2><i class="fas fa-users text-primary"></i> Liste de Tous les Patients</h2>
+                <p class="text-muted">Consultez les informations de tous les patients enregistrés</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#patientModal">
+                    <i class="fas fa-search"></i> <i class="fas fa-user-plus"></i> Rechercher / Enregistrer un Patient
+                </button>
             </div>
         </div>
 
-        <!-- Patients Grid -->
-        <div id="patientsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <%
-                if (patients != null && !patients.isEmpty()) {
-                    int index = 0;
-                    for (Patient patient : patients) {
-                        index++;
-                        String avatarColor = (index % 6 == 0) ? "from-purple-500 to-pink-500" :
-                                           (index % 5 == 0) ? "from-orange-500 to-red-500" :
-                                           (index % 4 == 0) ? "from-green-500 to-emerald-500" :
-                                           (index % 3 == 0) ? "from-blue-500 to-cyan-500" :
-                                           (index % 2 == 0) ? "from-indigo-500 to-purple-500" :
-                                           "from-pink-500 to-rose-500";
-            %>
-            <div class="patient-card bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 overflow-hidden hover:shadow-2xl transition-all"
-                 style="animation-delay: <%= index * 0.05 %>s;"
-                 data-patient-name="<%= patient.getFirstName().toLowerCase() %> <%= patient.getLastName().toLowerCase() %>"
-                 data-patient-dossier="<%= patient.getDossierNumber() %>"
-                 data-patient-gender="<%= patient.getGender() != null ? patient.getGender().toString() : "" %>">
-
-                <div class="p-6">
-                    <!-- Patient Header -->
-                    <div class="flex items-start gap-4 mb-6">
-                        <div class="w-16 h-16 bg-gradient-to-br <%= avatarColor %> rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            <%= patient.getFirstName().substring(0, 1).toUpperCase() %><%= patient.getLastName().substring(0, 1).toUpperCase() %>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                                <%= patient.getFirstName() %> <%= patient.getLastName() %>
-                            </h3>
-                            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <span class="font-medium">Dossier: <%= patient.getDossierNumber() %></span>
-                            </div>
-                        </div>
-                        <% if (patient.getGender() != null) { %>
-                        <div class="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-semibold">
-                            <%= patient.getGender().toString().equals("MALE") ? "👨 Homme" : "👩 Femme" %>
-                        </div>
-                        <% } %>
-                    </div>
-
-                    <!-- Patient Details Grid -->
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="p-3 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                            <div class="flex items-center gap-2 mb-1">
-                                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Date de naissance</span>
-                            </div>
-                            <p class="text-sm font-bold text-gray-900 dark:text-white">
-                                <%= patient.getDateOfBirth() != null ? patient.getDateOfBirth().toString() : "Non renseigné" %>
-                            </p>
-                        </div>
-
-                        <div class="p-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
-                            <div class="flex items-center gap-2 mb-1">
-                                <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
-                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Téléphone</span>
-                            </div>
-                            <p class="text-sm font-bold text-gray-900 dark:text-white">
-                                <%= patient.getPhone() != null ? patient.getPhone() : "Non renseigné" %>
-                            </p>
-                        </div>
-
-                        <div class="p-3 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                            <div class="flex items-center gap-2 mb-1">
-                                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Email</span>
-                            </div>
-                            <p class="text-sm font-bold text-gray-900 dark:text-white truncate">
-                                <%= patient.getEmail() != null ? patient.getEmail() : "Non renseigné" %>
-                            </p>
-                        </div>
-
-                        <div class="p-3 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-xl border border-orange-200 dark:border-orange-800">
-                            <div class="flex items-center gap-2 mb-1">
-                                <svg class="w-4 h-4 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Poids / Taille</span>
-                            </div>
-                            <p class="text-sm font-bold text-gray-900 dark:text-white">
-                                <%= patient.getWeight() != null ? patient.getWeight() + " kg" : "-" %> /
-                                <%= patient.getHeight() != null ? patient.getHeight() + " cm" : "-" %>
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Action Button -->
-                    <div class="flex gap-3">
-                        <a href="${pageContext.request.contextPath}/medicalFiles?id=<%= patient.getId() %>"
-                           class="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <span>Voir le Dossier Médical</span>
-                        </a>
-                    </div>
-                </div>
+        <c:if test="${not empty error}">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> ${error}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <%
-                    }
-                } else {
-            %>
-            <div class="col-span-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 p-16">
-                <div class="flex flex-col items-center gap-4">
-                    <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-full flex items-center justify-center">
-                        <svg class="w-12 h-12 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-xl font-semibold text-gray-700 dark:text-gray-300">Aucun patient</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Il n'y a aucun patient enregistré dans le système.</p>
-                    </div>
-                </div>
+        </c:if>
+
+        <c:if test="${not empty infoMessage}">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle"></i> ${infoMessage}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <% } %>
+        </c:if>
+
+        <c:if test="${not empty successMessage}">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> ${successMessage}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </c:if>
+
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Patients (${patients != null ? patients.size() : 0})</h5>
+            </div>
+            <div class="card-body">
+                <c:choose>
+                    <c:when test="${empty patients}">
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle"></i> Aucun patient enregistré dans le système.
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped" id="patientsTable">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th><i class="fas fa-hashtag"></i> ID</th>
+                                        <th><i class="fas fa-user"></i> Nom Complet</th>
+                                        <th><i class="fas fa-venus-mars"></i> Genre</th>
+                                        <th><i class="fas fa-phone"></i> Téléphone</th>
+                                        <th><i class="fas fa-envelope"></i> Email</th>
+                                        <th><i class="fas fa-calendar"></i> Date d'inscription</th>
+                                        <th class="text-center"><i class="fas fa-cogs"></i> Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="patient" items="${patients}">
+                                        <tr data-patient-id="${patient.id}"
+                                            data-patient-name="${patient.firstName} ${patient.lastName}"
+                                            data-patient-email="${patient.email}">
+                                            <td>${patient.id}</td>
+                                            <td>
+                                                <strong>${patient.firstName} ${patient.lastName}</strong>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${patient.gender == 'MALE'}">
+                                                        <span class="badge bg-info badge-gender">
+                                                            <i class="fas fa-mars"></i> Homme
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${patient.gender == 'FEMALE'}">
+                                                        <span class="badge bg-danger badge-gender">
+                                                            <i class="fas fa-venus"></i> Femme
+                                                        </span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge bg-secondary badge-gender">N/A</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>${patient.phone != null ? patient.phone : 'N/A'}</td>
+                                            <td>${patient.email != null ? patient.email : 'N/A'}</td>
+                                            <td>${patient.createdAt}</td>
+                                            <td class="text-center">
+                                                <a href="${pageContext.request.contextPath}/nurse/patients?action=view&id=${patient.id}"
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye"></i> Voir Détails
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </div>
         </div>
     </div>
-</main>
 
-<!-- Footer -->
-<jsp:include page="../../footer.jsp" />
+    <!-- Modal Rechercher / Enregistrer Patient -->
+    <div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="patientModalLabel">
+                        <i class="fas fa-search"></i> <i class="fas fa-user-plus"></i> Rechercher / Enregistrer un Patient
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tabs Navigation -->
+                    <ul class="nav nav-tabs" id="patientTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="search-tab" data-bs-toggle="tab" data-bs-target="#search" type="button" role="tab">
+                                <i class="fas fa-search"></i> Rechercher un Patient
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab">
+                                <i class="fas fa-user-plus"></i> Enregistrer un Nouveau Patient
+                            </button>
+                        </li>
+                    </ul>
 
-<script>
-    // Dark mode
-    if (localStorage.getItem('darkMode') === 'enabled' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-    }
+                    <!-- Tabs Content -->
+                    <div class="tab-content" id="patientTabsContent">
+                        <!-- Tab Rechercher -->
+                        <div class="tab-pane fade show active" id="search" role="tabpanel">
+                            <div class="mb-3">
+                                <label for="searchInput" class="form-label">
+                                    <i class="fas fa-keyboard"></i> Rechercher par nom, email ou ID
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="searchInput"
+                                       placeholder="Entrez le nom, email ou ID du patient...">
+                            </div>
+                            <div id="searchResults">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Commencez à taper pour rechercher un patient...
+                                </div>
+                            </div>
+                        </div>
 
-    // Search and Filter functionality
-    const searchInput = document.getElementById('searchInput');
-    const genderFilter = document.getElementById('genderFilter');
-    const patientCards = document.querySelectorAll('.patient-card');
+                        <!-- Tab Enregistrer -->
+                        <div class="tab-pane fade" id="register" role="tabpanel">
+                            <form id="registerPatientForm" method="post" action="${pageContext.request.contextPath}/nurse/patients">
+                                <input type="hidden" name="action" value="register">
 
-    function filterPatients() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedGender = genderFilter.value;
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstName" class="form-label">
+                                            <i class="fas fa-user"></i> Prénom <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastName" class="form-label">
+                                            <i class="fas fa-user"></i> Nom <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="lastName" name="lastName" required>
+                                    </div>
+                                </div>
 
-        patientCards.forEach(card => {
-            const patientName = card.getAttribute('data-patient-name');
-            const patientDossier = card.getAttribute('data-patient-dossier').toLowerCase();
-            const patientGender = card.getAttribute('data-patient-gender');
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="username" class="form-label">
+                                            <i class="fas fa-user-tag"></i> Nom d'utilisateur <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="username" name="username" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="password" class="form-label">
+                                            <i class="fas fa-lock"></i> Mot de passe <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+                                </div>
 
-            const matchesSearch = patientName.includes(searchTerm) || patientDossier.includes(searchTerm);
-            const matchesGender = selectedGender === '' || patientGender === selectedGender;
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">
+                                            <i class="fas fa-envelope"></i> Email <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">
+                                            <i class="fas fa-phone"></i> Téléphone
+                                        </label>
+                                        <input type="tel" class="form-control" id="phone" name="phone">
+                                    </div>
+                                </div>
 
-            if (matchesSearch && matchesGender) {
-                card.style.display = 'block';
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="gender" class="form-label">
+                                            <i class="fas fa-venus-mars"></i> Genre <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select" id="gender" name="gender" required>
+                                            <option value="">Sélectionner...</option>
+                                            <option value="MALE">Homme</option>
+                                            <option value="FEMALE">Femme</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Les champs marqués d'un <span class="text-danger">*</span> sont obligatoires.
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </button>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Enregistrer le Patient
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fonction de recherche en temps réel
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const resultsDiv = document.getElementById('searchResults');
+
+            if (searchTerm === '') {
+                resultsDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle"></i> Commencez à taper pour rechercher un patient...</div>';
+                return;
+            }
+
+            // Récupérer tous les patients depuis le tableau
+            const tableRows = document.querySelectorAll('#patientsTable tbody tr');
+            const results = [];
+
+            tableRows.forEach(row => {
+                const id = row.dataset.patientId;
+                const name = row.dataset.patientName.toLowerCase();
+                const email = row.dataset.patientEmail ? row.dataset.patientEmail.toLowerCase() : '';
+
+                if (id.includes(searchTerm) || name.includes(searchTerm) || email.includes(searchTerm)) {
+                    const cells = row.querySelectorAll('td');
+                    results.push({
+                        id: id,
+                        name: row.dataset.patientName,
+                        gender: cells[2].textContent.trim(),
+                        phone: cells[3].textContent.trim(),
+                        email: cells[4].textContent.trim(),
+                        date: cells[5].textContent.trim()
+                    });
+                }
+            });
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Aucun patient trouvé pour "' + searchTerm + '"</div>';
             } else {
-                card.style.display = 'none';
+                let html = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> ' + results.length + ' patient(s) trouvé(s)</div>';
+                html += '<div class="list-group">';
+
+                results.forEach(patient => {
+                    html += '<div class="list-group-item list-group-item-action">';
+                    html += '<div class="d-flex w-100 justify-content-between">';
+                    html += '<h6 class="mb-1"><i class="fas fa-user"></i> ' + patient.name + '</h6>';
+                    html += '<small>ID: ' + patient.id + '</small>';
+                    html += '</div>';
+                    html += '<p class="mb-1"><i class="fas fa-envelope"></i> ' + patient.email + ' | <i class="fas fa-phone"></i> ' + patient.phone + '</p>';
+                    html += '<div class="d-flex justify-content-between align-items-center">';
+                    html += '<small class="text-muted"><i class="fas fa-calendar"></i> ' + patient.date + '</small>';
+                    html += '<a href="${pageContext.request.contextPath}/nurse/patients?action=view&id=' + patient.id + '" class="btn btn-sm btn-primary">';
+                    html += '<i class="fas fa-eye"></i> Voir Détails</a>';
+                    html += '</div>';
+                    html += '</div>';
+                });
+
+                html += '</div>';
+                resultsDiv.innerHTML = html;
             }
         });
-    }
 
-    searchInput.addEventListener('input', filterPatients);
-    genderFilter.addEventListener('change', filterPatients);
-</script>
+        // Réinitialiser le modal quand il est fermé
+        document.getElementById('patientModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle"></i> Commencez à taper pour rechercher un patient...</div>';
+            document.getElementById('registerPatientForm').reset();
+            // Réactiver l'onglet recherche
+            const searchTab = new bootstrap.Tab(document.getElementById('search-tab'));
+            searchTab.show();
+        });
+    </script>
 </body>
 </html>
 

@@ -16,18 +16,23 @@ import java.util.List;
 @WebServlet("/allTickets")
 public class TicketServlet extends BaseServlet {
 
-    public void allTickets(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private final TicketService ticketService = new TicketService();
+
+    public void index(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            TicketService ticketService = new TicketService();
             List<Ticket> tickets = ticketService.findAll().stream()
-                    .filter(a -> a.getCreatedAt().toLocalDate().isEqual(LocalDate.now()) && a.getTicketStatus() ==  TicketStatus.PENDING)
+                    .filter(ticket -> ticket.getCreatedAt().toLocalDate().isEqual(LocalDate.now())
+                            && (TicketStatus.ACTIVE.equals(ticket.getStatus()) || TicketStatus.PENDING.equals(ticket.getStatus())))
                     .sorted(Comparator.comparing(Ticket::getCreatedAt))
                     .toList();
+
             req.setAttribute("tickets", tickets);
             view(req, resp, "tickets.jsp");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.err.println("Error loading tickets: " + e.getMessage());
+            e.printStackTrace();
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Une erreur est survenue lors du traitement des tickets");
         }
     }
-
 }

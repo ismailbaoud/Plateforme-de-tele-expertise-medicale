@@ -36,7 +36,9 @@ public class SpecialistConsultationServlet extends BaseServlet {
             // Récupérer toutes les consultations pour ce spécialiste
             List<Consultation> allConsultations = consultationService.findAll();
             List<Consultation> specialistConsultations = allConsultations.stream()
-                    .filter(c -> c.getSpecialist() != null && c.getSpecialist().getId().equals(specialist.getId()))
+                    .filter(c -> c.getScheduleSlot() != null 
+                            && c.getScheduleSlot().getSpecialist() != null 
+                            && c.getScheduleSlot().getSpecialist().getId().equals(specialist.getId()))
                     .toList();
 
             System.out.println("Loading consultations for specialist ID: " + specialist.getId());
@@ -74,7 +76,9 @@ public class SpecialistConsultationServlet extends BaseServlet {
 
             // Vérifier que c'est bien le spécialiste assigné
             Specialist specialist = (Specialist) user;
-            if (!consultation.getSpecialist().getId().equals(specialist.getId())) {
+            if (consultation.getScheduleSlot() == null 
+                    || consultation.getScheduleSlot().getSpecialist() == null
+                    || !consultation.getScheduleSlot().getSpecialist().getId().equals(specialist.getId())) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Vous n'êtes pas assigné à cette consultation");
                 return;
             }
@@ -82,7 +86,7 @@ public class SpecialistConsultationServlet extends BaseServlet {
             // Mettre à jour la consultation avec la réponse
             consultation.setExpertOpinion(expertOpinion);
             consultation.setRecommendations(recommendations);
-            consultation.setStatus(ConsultationStatus.COMPLETED);
+            consultation.setConsultationStatus(ConsultationStatus.COMPLETED);
             consultation.setUpdatedAt(LocalDateTime.now());
 
             consultationService.update(consultation);
@@ -122,4 +126,3 @@ public class SpecialistConsultationServlet extends BaseServlet {
         }
     }
 }
-

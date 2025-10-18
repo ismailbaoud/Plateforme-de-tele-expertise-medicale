@@ -3,6 +3,7 @@ package com.medicale.consultation.consultationmedicale.models.person;
 import com.medicale.consultation.consultationmedicale.enums.Gender;
 import com.medicale.consultation.consultationmedicale.enums.Role;
 import com.medicale.consultation.consultationmedicale.enums.Speciality;
+import com.medicale.consultation.consultationmedicale.models.ScheduleSlot;
 import com.medicale.consultation.consultationmedicale.models.consultation.Request;
 import jakarta.persistence.*;
 
@@ -11,8 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "specialists")
 @DiscriminatorValue("specialists")
-public class Specialist extends Person{
+public class Specialist extends Doctor {
+
     @Column(nullable = false, unique = true, name = "numero_RPPS")
     private String numeroRPPS;
 
@@ -24,9 +27,12 @@ public class Specialist extends Person{
     private double fee;
 
     @OneToMany(mappedBy = "specialist", cascade = CascadeType.ALL)
+    private List<ScheduleSlot> scheduleSlots = new ArrayList<>();
+
+    @OneToMany(mappedBy = "specialist", cascade = CascadeType.ALL)
     private List<Request> requests = new ArrayList<>();
 
-    public Specialist(int id, String firstName, String lastName, String username, String password, String phone, Gender gender, LocalDate createdAt, Role role, String numeroRPPS, Speciality speciality, double fee) {
+    public Specialist(Long id, String firstName, String lastName, String username, String password, String phone, Gender gender, LocalDate createdAt, Role role, String numeroRPPS, Speciality speciality, double fee) {
         super(id, firstName, lastName, username, password, phone, gender, createdAt, role);
         this.numeroRPPS = numeroRPPS;
         this.speciality = speciality;
@@ -57,5 +63,21 @@ public class Specialist extends Person{
 
     public void setFee(double fee) {
         this.fee = fee;
+    }
+
+    public List<ScheduleSlot> getScheduleSlots() {
+        return scheduleSlots;
+    }
+
+    public void setScheduleSlots(List<ScheduleSlot> scheduleSlots) {
+        this.scheduleSlots = scheduleSlots;
+    }
+
+    public List<Request> getRequests() {
+        return requests;
+    }
+
+    public void setRequests(List<Request> requests) {
+        this.requests = requests;
     }
 }

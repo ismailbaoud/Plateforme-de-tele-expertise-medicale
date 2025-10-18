@@ -6,21 +6,33 @@ import com.medicale.consultation.consultationmedicale.repositories.ConsultationR
 import java.util.List;
 
 public class ConsultationService {
-    private final ConsultationRepository consultationRepository = new ConsultationRepository();
+    private final ConsultationRepository consultationRepository;
 
-    public void save(Consultation consultation) {
-        consultationRepository.save(consultation);
+    public ConsultationService() {
+        this.consultationRepository = new ConsultationRepository();
+    }
+
+    public ConsultationService(ConsultationRepository consultationRepository) {
+        this.consultationRepository = consultationRepository;
     }
 
     public List<Consultation> findAll() {
         return consultationRepository.findAll();
     }
 
+    public Consultation save(Consultation consultation) {
+        return consultationRepository.save(consultation);
+    }
+
+    public Consultation update(Consultation consultation) {
+        return consultationRepository.update(consultation);
+    }
+
     public Consultation findById(Long id) {
         return consultationRepository.findById(id);
     }
 
-    public void update(Consultation consultation) {
-        consultationRepository.Update(consultation);
+    public void delete(Long id) {
+        consultationRepository.delete(id);
     }
 }

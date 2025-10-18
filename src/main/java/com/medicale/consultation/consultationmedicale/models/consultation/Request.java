@@ -1,98 +1,109 @@
 package com.medicale.consultation.consultationmedicale.models.consultation;
 
 import com.medicale.consultation.consultationmedicale.enums.RequestStatus;
+import com.medicale.consultation.consultationmedicale.models.person.Patient;
 import com.medicale.consultation.consultationmedicale.models.person.Specialist;
 import jakarta.persistence.*;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "requests")
+@Table(name = "consultation_requests")
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
-    @Column(nullable = false, name = "created_at")
-    private LocalDate createdAt;
-
-    @Column(nullable = false, name = "consultation_date")
-    private LocalDate consultationDate;
-
-    @Column(nullable = false)
-    private String description;
-
-    @Column(nullable = false)
-    private double cost;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "request_status")
-    private RequestStatus requestStatus;
-
-    @OneToOne
-    @JoinColumn(name = "consultation_id")
-    private Consultation consultation;
+    @ManyToOne
+    @JoinColumn(name = "patient_id", nullable = false)
+    private Patient patient;
 
     @ManyToOne
     @JoinColumn(name = "specialist_id", nullable = false)
     private Specialist specialist;
 
-    public Request(int id, LocalDate createdAt, LocalDate consultationDate, String description, double cost, RequestStatus requestStatus) {
-        this.id = id;
-        this.createdAt = createdAt;
-        this.consultationDate = consultationDate;
-        this.description = description;
-        this.cost = cost;
-        this.requestStatus = requestStatus;
+    @Column(nullable = false)
+    private String reason;
+
+    @Column(name = "preferred_date")
+    private LocalDateTime preferredDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RequestStatus status;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        if (status == null) {
+            status = RequestStatus.PENDING;
+        }
     }
 
-    public Request() {}
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
-    public int getId() {
+    // Getters and Setters
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public LocalDate getCreatedAt() {
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public Specialist getSpecialist() {
+        return specialist;
+    }
+
+    public void setSpecialist(Specialist specialist) {
+        this.specialist = specialist;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public LocalDateTime getPreferredDate() {
+        return preferredDate;
+    }
+
+    public void setPreferredDate(LocalDateTime preferredDate) {
+        this.preferredDate = preferredDate;
+    }
+
+    public RequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RequestStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDate getConsultationDate() {
-        return consultationDate;
-    }
-
-    public void setConsultationDate(LocalDate consultationDate) {
-        this.consultationDate = consultationDate;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public double getCost() {
-        return cost;
-    }
-
-    public void setCost(double cost) {
-        this.cost = cost;
-    }
-
-    public RequestStatus getRequestStatus() {
-        return requestStatus;
-    }
-
-    public void setRequestStatus(RequestStatus requestStatus) {
-        this.requestStatus = requestStatus;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }

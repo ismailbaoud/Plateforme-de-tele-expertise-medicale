@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@DiscriminatorValue("patients")
+@Table(name = "patients")
+@DiscriminatorValue("PATIENT")
 public class Patient extends Person {
     @Column(nullable = false, name = "dossier_number", unique = true)
     private String dossierNumber;
@@ -27,7 +28,18 @@ public class Patient extends Person {
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     private List<Ticket> tickets = new ArrayList<>();
 
-    public Patient(int id, String firstName, String lastName, String username, String password, String phone, Gender gender, LocalDate createdAt, Role role, String dossierNumber, LocalDate dateOfBirth, double height, double weight) {
+    @Column(name = "medical_history")
+    private String medicalHistory;
+
+    @Column(name = "blood_type")
+    private String bloodType;
+
+    @Column(name = "allergies")
+    private String allergies;
+
+    public Patient(Long id, String firstName, String lastName, String username, String password,
+                  String phone, Gender gender, LocalDate createdAt, Role role,
+                  String dossierNumber, LocalDate dateOfBirth, double height, double weight) {
         super(id, firstName, lastName, username, password, phone, gender, createdAt, role);
         this.dossierNumber = dossierNumber;
         this.dateOfBirth = dateOfBirth;
@@ -69,5 +81,29 @@ public class Patient extends Person {
 
     public void setWeight(double weight) {
         this.weight = weight;
+    }
+
+    public String getMedicalHistory() {
+        return medicalHistory;
+    }
+
+    public void setMedicalHistory(String medicalHistory) {
+        this.medicalHistory = medicalHistory;
+    }
+
+    public String getBloodType() {
+        return bloodType;
+    }
+
+    public void setBloodType(String bloodType) {
+        this.bloodType = bloodType;
+    }
+
+    public String getAllergies() {
+        return allergies;
+    }
+
+    public void setAllergies(String allergies) {
+        this.allergies = allergies;
     }
 }

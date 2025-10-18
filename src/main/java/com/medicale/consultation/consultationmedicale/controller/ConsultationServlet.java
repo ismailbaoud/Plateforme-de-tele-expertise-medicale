@@ -1,142 +1,192 @@
 package com.medicale.consultation.consultationmedicale.controller;
 
-
 import com.medicale.consultation.consultationmedicale.enums.ConsultationStatus;
-import com.medicale.consultation.consultationmedicale.enums.TicketStatus;
 import com.medicale.consultation.consultationmedicale.models.MedicaleFile;
-import com.medicale.consultation.consultationmedicale.models.Ticket;
+import com.medicale.consultation.consultationmedicale.models.ScheduleSlot;
 import com.medicale.consultation.consultationmedicale.models.consultation.Consultation;
 import com.medicale.consultation.consultationmedicale.models.consultation.MedicaleAct;
 import com.medicale.consultation.consultationmedicale.models.person.Patient;
+import com.medicale.consultation.consultationmedicale.models.person.Specialist;
 import com.medicale.consultation.consultationmedicale.service.ConsultationService;
 import com.medicale.consultation.consultationmedicale.service.MedicalFileSevice;
 import com.medicale.consultation.consultationmedicale.service.PatientService;
-import com.medicale.consultation.consultationmedicale.service.TicketService;
+import com.medicale.consultation.consultationmedicale.service.SpecialistService;
+import com.medicale.consultation.consultationmedicale.service.ScheduleService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet("/consultation")
+@WebServlet("/consultations")
 public class ConsultationServlet extends BaseServlet {
+    private final ConsultationService consultationService;
+    private final PatientService patientService;
+    private final SpecialistService specialistService;
+    private final ScheduleService scheduleService;
+    private final MedicalFileSevice medicalFileSevice;
 
-    public void index(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public ConsultationServlet() {
+        this.consultationService = new ConsultationService();
+        this.patientService = new PatientService();
+        this.specialistService = new SpecialistService();
+        this.scheduleService = new ScheduleService();
+        this.medicalFileSevice = new MedicalFileSevice();
+    }
+
+    public void index(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            Long id = Long.parseLong(req.getParameter("patientId"));
-            PatientService patientService = new PatientService();
-            Patient patient = patientService.findAll().stream().filter(a -> a.getId() == id).findFirst().get();
-            req.setAttribute("patient", patient);
-            view(req,resp,"consultation.jsp");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            Long patientId = Long.parseLong(request.getParameter("patientId"));
+            Patient patient = patientService.findById(patientId);
+            if (patient != null) {
+                request.setAttribute("patient", patient);
+                request.setAttribute("specialists", specialistService.findAll());
+                request.setAttribute("schedules", scheduleService.findAll());
+                view(request, response, "consultation.jsp");
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Patient non trouvé");
+            }
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID de patient invalide");
         }
     }
 
-    public void create(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public void create(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            req.setCharacterEncoding("UTF-8");
-
-            Long patientId = Long.parseLong(req.getParameter("patientId"));
-            PatientService patientService = new PatientService();
-
-            Patient patient = patientService.findAll().stream()
-                    .filter(a -> a.getId() == patientId)
-                    .findFirst()
-                    .orElse(null);
+            Long patientId = Long.parseLong(request.getParameter("patientId"));
+            Patient patient = patientService.findById(patientId);
 
             if (patient == null) {
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND,
-                        "Patient not found with ID: " + patientId);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Patient non trouvé");
                 return;
             }
 
-            MedicalFileSevice medicalFileSevice = new MedicalFileSevice();
-            MedicaleFile medicaleFile = medicalFileSevice.findAll().stream()
-                    .filter(a -> a.getPatient().getId() == patient.getId())
-                    .findFirst()
-                    .orElse(null);
-
-            if (medicaleFile == null) {
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND,
-                        "Medical file not found for patient ID: " + patientId);
+            String reason = request.getParameter("reason");
+            if (reason == null || reason.trim().isEmpty()) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "La raison est requise");
                 return;
             }
+
+            // Get or create medical file for the patient
+            MedicaleFile medicalFile = medicalFileSevice.findByPatientIdWithConsultations(patientId);
+            if (medicalFile == null) {
+                medicalFile = new MedicaleFile();
+                medicalFile.setPatient(patient);
+                medicalFile.setDiagnosis(request.getParameter("diagnosis") != null ? request.getParameter("diagnosis") : "");
+                medicalFile.setTreatmentPlan(request.getParameter("treatmentPlan"));
+                medicalFile.setNotes(request.getParameter("observations"));
+                medicalFile.setCreatedAt(LocalDateTime.now());
+                medicalFile = medicalFileSevice.save(medicalFile);
+            }
+
+            ConsultationStatus status = ConsultationStatus.valueOf(request.getParameter("status"));
 
             Consultation consultation = new Consultation();
             consultation.setPatient(patient);
-            consultation.setMedicalFile(medicaleFile);
-            consultation.setReason(req.getParameter("reason"));
-            consultation.setSymptoms(req.getParameter("symptoms"));
-            consultation.setClinicalExam(req.getParameter("clinicalExam"));
-            consultation.setDiagnosis(req.getParameter("diagnosis"));
-            consultation.setObservations(req.getParameter("observations"));
-            consultation.setTreatmentPlan(req.getParameter("treatmentPlan"));
+            consultation.setMedicalFile(medicalFile);
+            consultation.setReason(reason);
+            consultation.setSymptoms(request.getParameter("symptoms"));
+            consultation.setClinicalExam(request.getParameter("clinicalExam"));
+            consultation.setObservations(request.getParameter("observations"));
+            consultation.setDiagnosis(request.getParameter("diagnosis"));
+            consultation.setTreatmentPlan(request.getParameter("treatmentPlan"));
+            consultation.setConsultationStatus(status);
             consultation.setCreatedAt(LocalDateTime.now());
 
-            String statusParam = req.getParameter("status");
-            consultation.setConsultationStatus(
-                    ConsultationStatus.valueOf(statusParam)
-            );
+            // Log received data for debugging
+            System.out.println("=== DEBUG CONSULTATION CREATE ===");
+            System.out.println("Reason: " + reason);
+            System.out.println("Symptoms: " + request.getParameter("symptoms"));
+            System.out.println("Clinical Exam: " + request.getParameter("clinicalExam"));
+            System.out.println("Observations: " + request.getParameter("observations"));
+            System.out.println("Diagnosis: " + request.getParameter("diagnosis"));
+            System.out.println("Treatment Plan: " + request.getParameter("treatmentPlan"));
 
-            List<MedicaleAct> medicalActs = new ArrayList<>();
-            int index = 0;
-
-            while (true) {
-                String label = req.getParameter("acts[" + index + "].label");
-                String priceStr = req.getParameter("acts[" + index + "].price");
-
-                if (label == null && priceStr == null) {
-                    break;
+            // Handle medical acts
+            List<MedicaleAct> acts = new ArrayList<>();
+            int actIndex = 0;
+            while (request.getParameter("acts[" + actIndex + "].label") != null) {
+                String label = request.getParameter("acts[" + actIndex + "].label");
+                String priceStr = request.getParameter("acts[" + actIndex + "].price");
+                System.out.println("Act " + actIndex + ": label=" + label + ", price=" + priceStr);
+                if (label != null && !label.trim().isEmpty() && priceStr != null) {
+                    MedicaleAct act = new MedicaleAct();
+                    act.setLabel(label);
+                    act.setPrice(Double.parseDouble(priceStr));
+                    act.setConsultation(consultation);
+                    acts.add(act);
                 }
+                actIndex++;
+            }
+            consultation.setMedicaleActs(acts);
+            System.out.println("Total medical acts: " + acts.size());
 
-                if (label != null && !label.trim().isEmpty()
-                        && priceStr != null && !priceStr.trim().isEmpty()) {
+            System.out.println("Saving consultation...");
+            Consultation savedConsultation = consultationService.save(consultation);
+            System.out.println("Consultation saved with ID: " + savedConsultation.getId());
+
+            // Handle specialist if status is WAITING_SPECIALIST - AFTER saving consultation
+            if (status == ConsultationStatus.WAITING_SPECIALIST) {
+                String selectedSlotJson = request.getParameter("selectedSlot");
+                String specialistIdStr = request.getParameter("selectedSpecialistId");
+
+                System.out.println("Specialist ID: " + specialistIdStr);
+                System.out.println("Selected Slot JSON: " + selectedSlotJson);
+
+                if (selectedSlotJson != null && !selectedSlotJson.isEmpty() && specialistIdStr != null) {
                     try {
-                        MedicaleAct act = new MedicaleAct();
-                        act.setLabel(label.trim());
-                        act.setPrice(Double.parseDouble(priceStr.trim()));
-                        act.setConsultation(consultation);
-                        medicalActs.add(act);
+                        JSONObject slotData = new JSONObject(selectedSlotJson);
+                        Long specialistId = Long.parseLong(specialistIdStr);
 
-                        System.out.println("Added act: " + label + " - " + priceStr + "€");
-                    } catch (NumberFormatException e) {
-                        System.err.println(" Invalid price format at index "
-                                + index + ": " + priceStr);
+                        Specialist specialist = specialistService.findById(specialistId);
+                        if (specialist != null) {
+                            // Find or create the schedule slot
+                            int day = slotData.getInt("day");
+                            String timeStr = slotData.getString("time");
+                            java.time.LocalTime time = java.time.LocalTime.parse(timeStr);
+
+                            // Find existing slot or create new one
+                            List<ScheduleSlot> allSlots = scheduleService.findAll();
+                            ScheduleSlot slot = allSlots.stream()
+                                .filter(s -> s.getSpecialist().getId().equals(specialistId)
+                                    && s.getDay() == day
+                                    && s.getTime().equals(time))
+                                .findFirst()
+                                .orElse(null);
+
+                            if (slot == null) {
+                                slot = new ScheduleSlot();
+                                slot.setSpecialist(specialist);
+                                slot.setDay(day);
+                                slot.setTime(time);
+                            }
+
+                            slot.setStatus(com.medicale.consultation.consultationmedicale.enums.SlotStatus.RESERVED);
+                            slot.setConsultation(savedConsultation);
+                            scheduleService.save(slot);
+                            System.out.println("Schedule slot saved for specialist: " + specialistId);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        // Continue without specialist if parsing fails
                     }
                 }
-                index++;
             }
 
-            System.out.println(" Total medical acts found: " + medicalActs.size());
-            consultation.setMedicaleActs(medicalActs);
+            System.out.println("=== END DEBUG ===");
 
-            ConsultationService consultationService = new ConsultationService();
-            consultationService.save(consultation);
-            TicketService ticketService = new TicketService();
-            Ticket ticket = ticketService.findAll().stream().filter(a -> a.getPatient().getId() == patient.getId() && a.getTicketStatus() == TicketStatus.PENDING).findFirst().orElse(null);
-            ticket.setTicketStatus(TicketStatus.COMPLETED);
-            ticketService.changeStatus(ticket);
-
-
-            resp.sendRedirect("/medicalFiles?id=" + patientId + "&creation=success");
-
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid number format: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/medicalFiles?id=" + patientId);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid consultation status: " + e.getMessage());
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Paramètres invalides: " + e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServletException("Error creating consultation: " + e.getMessage(), e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erreur lors de la création de la consultation: " + e.getMessage());
         }
     }
-
 }

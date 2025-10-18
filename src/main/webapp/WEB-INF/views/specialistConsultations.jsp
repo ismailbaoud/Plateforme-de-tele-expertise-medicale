@@ -11,7 +11,7 @@
         response.sendRedirect(request.getContextPath() + "/login");
         return;
     }
-
+    
     Specialist specialist = (Specialist) user;
     List<Consultation> consultations = (List<Consultation>) request.getAttribute("consultations");
     String successMessage = (String) session.getAttribute("successMessage");
@@ -142,7 +142,7 @@
                         String statusColor = "";
                         String statusBg = "";
                         String statusText = "";
-
+                        
                         if (consultation.getStatus() == ConsultationStatus.PENDING) {
                             statusColor = "yellow";
                             statusBg = "bg-yellow-100 dark:bg-yellow-900/30";
@@ -386,4 +386,3 @@
 </script>
 </body>
 </html>
-

@@ -1,6 +1,5 @@
 package com.medicale.consultation.consultationmedicale.controller;
 
-import com.medicale.consultation.consultationmedicale.models.MedicaleFile;
 import com.medicale.consultation.consultationmedicale.models.consultation.Consultation;
 import com.medicale.consultation.consultationmedicale.models.consultation.MedicaleAct;
 import com.medicale.consultation.consultationmedicale.service.ConsultationService;
@@ -15,33 +14,56 @@ import java.io.IOException;
 @WebServlet("/medicalActs")
 public class MedicalActsServlet extends BaseServlet {
 
+    private final ConsultationService consultationService = new ConsultationService();
+    private final MedicalActsService medicalActsService = new MedicalActsService();
+
     public void index(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            ConsultationService consultationService = new ConsultationService();
-            Long id =Long.parseLong(req.getParameter("id"));
-            Consultation consultation = consultationService.findAll().stream().filter(a -> a.getMedicalFile().getId() == id).findFirst().get();
-            req.setAttribute("consultationId", consultation.getId());
-            view(req , resp , "medicalActs.jsp");
+            Long id = Long.parseLong(req.getParameter("id"));
+
+            Consultation consultation = consultationService.findAll().stream()
+                    .filter(a -> a.getMedicalFile().getId().equals(id))
+                    .findFirst()
+                    .orElseThrow(() -> new ServletException("Consultation non trouvée"));
+
+            req.setAttribute("consultation", consultation);
+            view(req, resp, "medicalActs.jsp");
+        } catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID de consultation invalide");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Une erreur est survenue: " + e.getMessage());
         }
     }
 
     public void create(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        MedicalActsService  medicalActsService = new MedicalActsService();
         try {
             String label = req.getParameter("label");
-            Double price = Double.parseDouble(req.getParameter("price"));
+            double price = Double.parseDouble(req.getParameter("price"));
+            Long consultationId = Long.parseLong(req.getParameter("id"));
+
+            if (label == null || label.trim().isEmpty()) {
+                throw new IllegalArgumentException("Le libellé est requis");
+            }
+
+            Consultation consultation = consultationService.findById(consultationId);
+            if (consultation == null) {
+                throw new ServletException("Consultation non trouvée");
+            }
+
             MedicaleAct medicaleAct = new MedicaleAct();
-            ConsultationService consultationService = new ConsultationService();
-            Consultation consultation = consultationService.findById(Long.parseLong(req.getParameter("id")));
-            medicaleAct.setConsultation(consultation);
             medicaleAct.setLabel(label);
             medicaleAct.setPrice(price);
+            medicaleAct.setConsultation(consultation);
+
             medicalActsService.save(medicaleAct);
-            view(req , resp , "medicalActs.jsp");
+
+            resp.sendRedirect(req.getContextPath() + "/medicalActs?id=" + consultation.getMedicalFile().getId());
+        } catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Prix ou ID invalide");
+        } catch (IllegalArgumentException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Une erreur est survenue: " + e.getMessage());
         }
     }
 }

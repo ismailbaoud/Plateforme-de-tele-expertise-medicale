@@ -1,13 +1,13 @@
 package com.medicale.consultation.consultationmedicale.controller;
 
 import com.medicale.consultation.consultationmedicale.enums.ConsultationStatus;
+import com.medicale.consultation.consultationmedicale.enums.Gender;
 import com.medicale.consultation.consultationmedicale.enums.Role;
 import com.medicale.consultation.consultationmedicale.enums.TicketStatus;
 import com.medicale.consultation.consultationmedicale.models.MedicaleFile;
 import com.medicale.consultation.consultationmedicale.models.Ticket;
 import com.medicale.consultation.consultationmedicale.models.consultation.Consultation;
 import com.medicale.consultation.consultationmedicale.models.person.Patient;
-import com.medicale.consultation.consultationmedicale.models.person.Person;
 import com.medicale.consultation.consultationmedicale.service.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,7 +17,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @WebServlet("/savePatientOrVitals")
 public class PatientServlet extends BaseServlet {
@@ -61,6 +60,7 @@ public class PatientServlet extends BaseServlet {
             patient.setEmail(req.getParameter("email"));
             patient.setRole(Role.PATIENT);
             patient.setPhone(req.getParameter("phone"));
+            patient.setGender(Gender.valueOf(req.getParameter("gender")));
             patient.setCreatedAt(LocalDate.now());
             patient.setWeight(Double.parseDouble(req.getParameter("weight")));
             patient.setHeight(Double.parseDouble(req.getParameter("height")));
@@ -73,6 +73,7 @@ public class PatientServlet extends BaseServlet {
 
             MedicaleFile medicaleFile = new MedicaleFile();
             medicaleFile.setPatient(patient);
+            medicaleFile.setDiagnosis("En attente d'évaluation");
             medicaleFile.setTemperature(Double.parseDouble(req.getParameter("temperature")));
             medicaleFile.setPulse(Integer.parseInt(req.getParameter("pulse")));
             medicaleFile.setBloodPresure(Integer.parseInt(req.getParameter("bloodPressure")));
@@ -84,21 +85,27 @@ public class PatientServlet extends BaseServlet {
             Ticket ticket = new Ticket();
             ticket.setCreatedAt(LocalDateTime.now());
             ticket.setPatient(patient);
-            ticket.setTicketStatus(TicketStatus.PENDING);
+            ticket.setStatus(TicketStatus.ACTIVE);
+            // Générer un numéro de ticket unique
+            String ticketNumber = "T" + System.currentTimeMillis() + "-" + patient.getId();
+            ticket.setTicketNumber(ticketNumber);
             ticketService.save(ticket);
 
             Consultation consultation = new Consultation();
             consultation.setCreatedAt(LocalDateTime.now());
-            consultation.setConsultationStatus(ConsultationStatus.CREATED);
+            consultation.setConsultationStatus(ConsultationStatus.PENDING);
             consultation.setMedicalFile(medicaleFile);
+            consultation.setPatient(patient);
+            consultation.setReason("Consultation initiale");
             consultationService.save(consultation);
 
+            req.setAttribute("success", "Patient créé avec succès !");
             view(req, resp, "patientAdd.jsp");
-
-
 
         }catch (Exception e){
             e.printStackTrace();
+            req.setAttribute("error", "Erreur lors de la création du patient : " + e.getMessage());
+            view(req, resp, "patientAdd.jsp");
         }
     }
 
@@ -130,7 +137,10 @@ public class PatientServlet extends BaseServlet {
             Ticket ticket = new Ticket();
             ticket.setCreatedAt(LocalDateTime.now());
             ticket.setPatient(patient);
-            ticket.setTicketStatus(TicketStatus.PENDING);
+            ticket.setStatus(TicketStatus.ACTIVE);
+            // Générer un numéro de ticket unique
+            String ticketNumber = "T" + System.currentTimeMillis() + "-" + patient.getId();
+            ticket.setTicketNumber(ticketNumber);
             ticketService.save(ticket);
 
             medicaleFile.setTemperature(Double.parseDouble(req.getParameter("temperature")));
@@ -140,7 +150,7 @@ public class PatientServlet extends BaseServlet {
             medicaleFile.setOxygenSaturation(Integer.parseInt(req.getParameter("oxygenSaturation")));
             medicaleFile.setPain(Integer.parseInt(req.getParameter("pain")));
 
-            medicalFileSevice.update(medicaleFile);
+            medicalFileSevice.save(medicaleFile);
 
             req.setAttribute("medicalFile", medicaleFile);
             req.setAttribute("success", "Patient mis à jour avec succès !");
